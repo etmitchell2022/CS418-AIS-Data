@@ -6,6 +6,8 @@ const url = 'mongodb://localhost:27017';
 // Database Name
 const dbName = 'projectData';
 
+stub = false;
+
 /**
  * Insert a batch of AIS messages (Static Data and/or Position Reports) (1)
  *
@@ -214,4 +216,5 @@ module.exports = {
   readRecentPosition,
   readAllPorts,
   tileShipPositions,
+  stub
 };
