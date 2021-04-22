@@ -3,11 +3,10 @@ const qr = require('../DAO');
 
 qr.stub = true;
 
-var assert = require('assert');
-describe('Array', function() {
-  describe('#indexOf()', function() {
-    it('should return -1 when the value is not present', function() {
-      assert.equal([1, 2, 3].indexOf(4), -1);
-    });
+const { insertAISBatch } = qr;
+
+describe('insertAISBatch', () => {
+  it('Tests insertion of a batch of AIS messages', async () => {
+      const res = await insertAISBatch()
   });
 });

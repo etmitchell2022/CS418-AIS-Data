@@ -216,5 +216,5 @@ module.exports = {
   readRecentPosition,
   readAllPorts,
   tileShipPositions,
-  stub
+  stub,
 };
