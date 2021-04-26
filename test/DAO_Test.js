@@ -32,8 +32,7 @@ describe('insertAISBatch', () => {
       assert.equal(fixures.batch.length, 3);
     }
     const res = await insertAISBatch(fixures.batch);
-    assert.equal(fixures.batch.length, res.length);
-    
+    assert.equal(fixures.batch.length, res);
   });
 });
 
