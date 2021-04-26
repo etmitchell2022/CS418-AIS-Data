@@ -1,5 +1,6 @@
 var assert = require('chai').assert;
 const qr = require('../DAO');
+const fixures = require('./fixtures');
 
 qr.stub = true;
 
@@ -26,7 +27,11 @@ const {
  */
 describe('insertAISBatch', () => {
   it('Tests insertion of a batch of AIS messages', async () => {
-    const res = await insertAISBatch();
+    // const res = await insertAISBatch(fixures.data);
+    if (qr.stub) {
+      assert.isArray(fixures.data);
+      assert.equal(fixures.data.length, 3);
+    }
   });
 });
 
