@@ -27,11 +27,13 @@ const {
  */
 describe('insertAISBatch', () => {
   it('Tests insertion of a batch of AIS messages', async () => {
-    // const res = await insertAISBatch(fixures.data);
     if (qr.stub) {
-      assert.isArray(fixures.data);
-      assert.equal(fixures.data.length, 3);
+      assert.isArray(fixures.batch);
+      assert.equal(fixures.batch.length, 3);
     }
+    const res = await insertAISBatch(fixures.batch);
+    assert.equal(fixures.batch.length, res.length);
+    
   });
 });
 

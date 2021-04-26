@@ -17,14 +17,15 @@ stub = false;
  *
  * @returns Number of insertions
  */
-const insertAISBatch = async () => {
+const insertAISBatch = async (vesselBatch) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    await client.connect();
+    const ais = client.db(dbName).collection('ais');
+    await vesselBatch.map((batch) => ais.insertOne(batch));
+    return vesselBatch.length;
   } finally {
     client.close();
   }

@@ -1,6 +1,6 @@
 //Test data fixtures
 
-const data = [
+const batch = [
   {
     _id: { $oid: '607ce129dfc52641ea55ed84' },
     Timestamp: { $date: '2020-11-18T00:00:00.000+0000' },
@@ -45,5 +45,5 @@ const data = [
 ];
 
 module.exports = {
-  data,
+  batch,
 };
