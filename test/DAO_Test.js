@@ -47,7 +47,13 @@ describe('insertAISBatch', () => {
  */
 describe('insertSingleAIS', () => {
   it('Tests insertion of single AIS message', async () => {
-    const res = await insertSingleAIS();
+    if (qr.stub) {
+      assert.isObject(fixures.singleMessage);
+      assert.isNotEmpty(fixures.singleMessage);
+    }
+    const res = await insertSingleAIS(fixures.singleMessage);
+    assert.isString(res);
+    assert.equal('1', res);
   });
 });
 

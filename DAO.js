@@ -40,14 +40,20 @@ const insertAISBatch = async (vesselBatch) => {
  *
  * @returns 1/0 for Success/Failure
  */
-const insertSingleAIS = async () => {
+const insertSingleAIS = async (aisMessage) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    await client.connect();
+    try {
+      const ais = client.db(dbName).collection('ais');
+      await ais.insertOne(aisMessage);
+      return '1';
+    } catch (error) {
+      console.log(error)
+      return '0';
+    }
   } finally {
     client.close();
   }
@@ -61,6 +67,7 @@ const insertSingleAIS = async () => {
  * Data - N/A
  *
  * @returns Number of Deletions
+ *
  */
 const deleteAIS = async () => {
   const client = new MongoClient('mongodb://localhost:27017', {

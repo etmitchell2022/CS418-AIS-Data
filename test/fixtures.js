@@ -44,6 +44,20 @@ const batch = [
   },
 ];
 
+const singleMessage = {
+  _id: 'gbdjwgdsj87',
+  Timestamp: '2020-11-18T00:00:00.000+0000',
+  Class: 'Class A',
+  MMSI: 1111,
+  MsgType: 'position_report',
+  Position: { type: 'Point', coordinates: [57.120583, 8.599218] },
+  Status: 'Under way using engine',
+  RoT: 0.0,
+  SoG: 0.0,
+  Heading: 55,
+};
+
 module.exports = {
   batch,
+  singleMessage,
 };
