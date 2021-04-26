@@ -57,7 +57,29 @@ const singleMessage = {
   Heading: 55,
 };
 
+const vesselInfo = {
+  _id: '607ce129dfc52641ea55eda6',
+  Timestamp: '2020-11-18T00:00:00.000+0000',
+  Class: 'Class A',
+  MMSI: 265011000,
+  MsgType: 'static_data',
+  IMO: 8616087,
+  CallSign: 'SBEN',
+  Name: 'SOFIA',
+  VesselType: 'Cargo',
+  Length: 72,
+  Breadth: 11,
+  Draught: 3.7,
+  Destination: 'DK VEJ',
+  ETA: '2020-11-18T10:00:00.000+0000',
+  A: 59,
+  B: 13,
+  C: 6,
+  D: 5,
+};
+
 module.exports = {
   batch,
   singleMessage,
+  vesselInfo,
 };

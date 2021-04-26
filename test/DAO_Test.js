@@ -105,7 +105,7 @@ describe('readSinglePosition', () => {
 /**
  * Read permanent or transient vessel information matching the given MMSI, and 0 or more additional criteria: IMO, Name, CallSign (1)
  *
- * @params - MMSI (optional: IMO, Name)
+ * @params - MMSI (optional: IMO, Name, callsign)
  *
  * Data - N/A
  *
@@ -113,7 +113,8 @@ describe('readSinglePosition', () => {
  */
 describe('readVesselInfo', () => {
   it('Test read vessel information', async () => {
-    const res = await readVesselInfo();
+    const res = await readVesselInfo(265011000, 8616087, 'SOFIA', 'SBEN');
+    console.log(res);
   });
 });
 

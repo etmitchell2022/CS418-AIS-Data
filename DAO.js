@@ -51,7 +51,7 @@ const insertSingleAIS = async (aisMessage) => {
       await ais.insertOne(aisMessage);
       return '1';
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return '0';
     }
   } finally {
@@ -129,20 +129,28 @@ const readSinglePosition = async () => {
 /**
  * Read permanent or transient vessel information matching the given MMSI, and 0 or more additional criteria: IMO, Name, CallSign (1)
  *
- * @params - MMSI (optional: IMO, Name)
+ * @params - MMSI (optional: IMO, Name, callsign)
  *
  * Data - N/A
  *
  * @returns a Vessel document, with available and/or relevant properties.
  */
-const readVesselInfo = async () => {
+const readVesselInfo = async (mmsi, imo, name, callsign) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    await client.connect();
+    const ais = client.db(dbName).collection('ais');
+    const res = await ais.find({
+      $and: [
+        {
+          $or: [{ IMO: imo }, { Name: name }, { Callsign: callsign }],
+        },
+        { MMSI: mmsi },
+      ],
+    }).toArray();
+    return res;
   } finally {
     client.close();
   }
