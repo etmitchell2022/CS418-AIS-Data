@@ -45,7 +45,7 @@ const batch = [
 ];
 
 const singleMessage = {
-  _id: Math.floor(Math.random() * 100).toString(),
+  _id: Math.floor(Math.random() * 10000000).toString(),
   Timestamp: '2020-11-18T00:00:00.000+0000',
   Class: 'Class A',
   MMSI: 1111,

@@ -115,7 +115,7 @@ describe('readVesselInfo', () => {
   it('Test read vessel information', async () => {
     const res = await readVesselInfo(265011000, 8616087, 'SOFIA', 'SBEN');
     assert.isArray(res);
-  });
+  }).timeout(5000);
 });
 
 /**
@@ -144,6 +144,9 @@ describe('readRecentPosition', () => {
  */
 describe('readAllPorts', () => {
   it('Test read of ports matching given name and country', async () => {
+    if (qr.stubs) {
+      assert.isArray(fixtures.readPorts);
+    }
     const res = await readAllPorts('Frederikshavn', 'Denmark');
     assert.isArray(res);
     assert.deepEqual(res, fixures.readPorts);
