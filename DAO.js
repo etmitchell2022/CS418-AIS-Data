@@ -97,7 +97,9 @@ const readAllPositions = async () => {
   });
   try {
     return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
+      const position = client.db(dbName).collection('position');
+      var coordinates = await position.find({'coordinates':1}).toArray();
+      return coordinates;
     });
   } finally {
     client.close();
@@ -119,7 +121,9 @@ const readSinglePosition = async () => {
   });
   try {
     return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
+      const vessel = client.db(dbName).collection('vessel');
+      var doc = await vessel.find({'MMSI':1, 'coordinates': 1,'IMO': 1});
+      return doc;
     });
   } finally {
     client.close();
@@ -173,6 +177,8 @@ const readRecentPosition = async () => {
   });
   try {
     return new Promise((resolve) => {
+
+
       resolve('NOT IMPLEMENTED');
     });
   } finally {
