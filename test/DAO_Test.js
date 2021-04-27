@@ -114,7 +114,7 @@ describe('readSinglePosition', () => {
 describe('readVesselInfo', () => {
   it('Test read vessel information', async () => {
     const res = await readVesselInfo(265011000, 8616087, 'SOFIA', 'SBEN');
-    console.log(res);
+    assert.isArray(res);
   });
 });
 
@@ -144,7 +144,9 @@ describe('readRecentPosition', () => {
  */
 describe('readAllPorts', () => {
   it('Test read of ports matching given name and country', async () => {
-    const res = await readAllPorts();
+    const res = await readAllPorts('Frederikshavn', 'Denmark');
+    assert.isArray(res);
+    assert.deepEqual(res, fixures.readPorts);
   });
 });
 

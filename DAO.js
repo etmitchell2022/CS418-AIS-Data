@@ -142,14 +142,16 @@ const readVesselInfo = async (mmsi, imo, name, callsign) => {
   try {
     await client.connect();
     const ais = client.db(dbName).collection('ais');
-    const res = await ais.find({
-      $and: [
-        {
-          $or: [{ IMO: imo }, { Name: name }, { Callsign: callsign }],
-        },
-        { MMSI: mmsi },
-      ],
-    }).toArray();
+    const res = await ais
+      .find({
+        $and: [
+          {
+            $or: [{ IMO: imo }, { Name: name }, { Callsign: callsign }],
+          },
+          { MMSI: mmsi },
+        ],
+      })
+      .toArray();
     return res;
   } finally {
     client.close();
@@ -187,14 +189,25 @@ const readRecentPosition = async () => {
  *
  * @returns Array of port documents
  */
-const readAllPorts = async () => {
+const readAllPorts = async (portName, portCountry) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    await client.connect();
+    const ports = client.db(dbName).collection('ports');
+    const res = await ports
+      .find({
+        $and: [
+          {
+            $or: [{ country: portCountry }],
+          },
+          { port_location: portName },
+        ],
+      })
+      .project({ _id: 0 })
+      .toArray();
+    return res;
   } finally {
     client.close();
   }
