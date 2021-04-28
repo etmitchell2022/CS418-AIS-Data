@@ -101,6 +101,10 @@ describe('readAllPositions', () => {
  */
 describe('readSinglePosition', () => {
   it('Test read of most recent ship position', async () => {
+    if (qr.stub) {
+      assert.isObject(fixures.mostRecentPosition);
+      assert.length(1, fixures.mostRecentPosition.length);
+    }
     const res = await readSinglePosition(219022256);
     assert.deepEqual(res, fixures.mostRecentPosition);
     assert.isArray(res);
