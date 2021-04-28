@@ -2,8 +2,7 @@
 
 const batch = [
   {
-    _id: { $oid: '607ce129dfc52641ea55ed84' },
-    Timestamp: { $date: '2020-11-18T00:00:00.000+0000' },
+    Timestamp: '2020-11-18T00:00:00.000+0000',
     Class: 'AtoN',
     MMSI: 992111840,
     MsgType: 'static_data',
@@ -18,8 +17,7 @@ const batch = [
     D: 30,
   },
   {
-    _id: { $oid: '607ce129dfc52641ea55ed83' },
-    Timestamp: { $date: '2020-11-18T00:00:00.000+0000' },
+    Timestamp: '2020-11-18T00:00:00.000+0000',
     Class: 'Class A',
     MMSI: 257961000,
     MsgType: 'position_report',
@@ -31,8 +29,7 @@ const batch = [
     Heading: 240,
   },
   {
-    _id: { $oid: '607ce129dfc52641ea55edb2' },
-    Timestamp: { $date: '2020-11-18T00:00:00.000+0000' },
+    Timestamp: '2020-11-18T00:00:00.000+0000',
     Class: 'Class A',
     MMSI: 220043000,
     MsgType: 'position_report',
@@ -42,13 +39,27 @@ const batch = [
     SoG: 0.0,
     Heading: 55,
   },
+  {
+    Timestamp: '2020-11-18T00:00:00.000+0000',
+    Class: 'AtoN',
+    MMSI: 992111840,
+    MsgType: 'static_data',
+    IMO: 'Unknown',
+    Name: 'WIND FARM BALTIC1NW',
+    VesselType: 'Undefined',
+    Length: 60,
+    Breadth: 60,
+    A: 30,
+    B: 30,
+    C: 30,
+    D: 30,
+  },
 ];
 
 const singleMessage = {
-  _id: Math.floor(Math.random() * 10000000).toString(),
-  Timestamp: '2020-11-18T00:00:00.000+0000',
+  Timestamp: '2021-04-27-18T00:00:00.000+0000',
   Class: 'Class A',
-  MMSI: 1111,
+  MMSI: 111122223333,
   MsgType: 'position_report',
   Position: { type: 'Point', coordinates: [57.120583, 8.599218] },
   Status: 'Under way using engine',
@@ -56,6 +67,70 @@ const singleMessage = {
   SoG: 0.0,
   Heading: 55,
 };
+
+const recentShipPositions = [
+  {
+    Timestamp: '2020-11-18T02:38:22.000+0000',
+    Class: 'Class A',
+    MMSI: 219022256,
+    MsgType: 'position_report',
+    Position: {
+      type: 'Point',
+      coordinates: [54.572058, 11.928778],
+    },
+    Status: 'Under way using engine',
+    RoT: 0.0,
+    SoG: 0.0,
+    CoG: 264.6,
+    Heading: 207,
+  },
+  {
+    Timestamp: '2020-11-18T02:38:22.000+0000',
+    Class: 'Class A',
+    MMSI: 375203000,
+    MsgType: 'position_report',
+    Position: {
+      type: 'Point',
+      coordinates: [54.520033, 12.182773],
+    },
+    Status: 'Under way using engine',
+    RoT: 0.0,
+    SoG: 6.2,
+    CoG: 193.3,
+    Heading: 194,
+  },
+  {
+    Timestamp: '2020-11-18T02:38:22.000+0000',
+    Class: 'Class A',
+    MMSI: 266343000,
+    MsgType: 'position_report',
+    Position: {
+      type: 'Point',
+      coordinates: [55.503335, 10.874448],
+    },
+    Status: 'Under way using engine',
+    RoT: 0.0,
+    SoG: 18.8,
+    CoG: 146.6,
+    Heading: 149,
+  },
+  {
+    Timestamp: '2020-11-18T02:38:22.000+0000',
+    Class: 'Class A',
+    MMSI: 235090202,
+    MsgType: 'position_report',
+    Position: {
+      type: 'Point',
+      coordinates: [54.646827, 11.355255],
+    },
+    Status: 'Restricted maneuverability',
+    SoG: 0.1,
+    CoG: 64.9,
+    Heading: 270,
+  },
+];
+
+const mostRecentPosition = { MMSI: 219022256, lat: 54.572058, long: 11.928778 };
 
 const vesselInfo = {
   _id: '607ce129dfc52641ea55eda6',
@@ -98,4 +173,6 @@ module.exports = {
   singleMessage,
   vesselInfo,
   readPorts,
+  recentShipPositions,
+  mostRecentPosition,
 };

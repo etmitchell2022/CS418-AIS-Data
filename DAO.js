@@ -96,11 +96,13 @@ const readAllPositions = async () => {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      const position = client.db(dbName).collection('position');
-      var coordinates = await position.find({'coordinates':1}).toArray();
-      return coordinates;
-    });
+    client.connect();
+    const ais = client.db(dbName).collection('ais');
+    const ships = await ais
+      .aggregate([{ $sort: { Timestamp: -1 } }], { allowDiskUse: true })
+      .project({ _id: 0 })
+      .toArray();
+    return ships;
   } finally {
     client.close();
   }
@@ -115,16 +117,34 @@ const readAllPositions = async () => {
  *
  * @returns Position document of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ... }
  */
-const readSinglePosition = async () => {
+const readSinglePosition = async (mmsi) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      const vessel = client.db(dbName).collection('vessel');
-      var doc = await vessel.find({'MMSI':1, 'coordinates': 1,'IMO': 1});
-      return doc;
-    });
+    client.connect();
+    const ais = client.db(dbName).collection('ais');
+    const ships = await ais
+      .aggregate([{ $match: { MMSI: mmsi } }, { $sort: { Timestamp: -1 } }], {
+        allowDiskUse: true,
+      })
+      .project({ _id: 0 })
+      .limit(1)
+      .toArray();
+    if (ships[0]['IMO']) {
+      shipDocument = {
+        MMSI: ships[0]['MMSI'],
+        lat: ships[0]['Position']['coordinates'][0],
+        long: ships[0]['Position']['coordinates'][1],
+        IMO: ships[0]['IMO'],
+      };
+    }
+    shipDocument = {
+      MMSI: ships[0]['MMSI'],
+      lat: ships[0]['Position']['coordinates'][0],
+      long: ships[0]['Position']['coordinates'][1],
+    };
+    return shipDocument;
   } finally {
     client.close();
   }
@@ -177,8 +197,6 @@ const readRecentPosition = async () => {
   });
   try {
     return new Promise((resolve) => {
-
-
       resolve('NOT IMPLEMENTED');
     });
   } finally {
@@ -233,9 +251,7 @@ const tileShipPositions = async () => {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    await client.connect();
   } finally {
     client.close();
   }

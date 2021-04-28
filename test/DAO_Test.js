@@ -29,7 +29,7 @@ describe('insertAISBatch', () => {
   it('Tests insertion of a batch of AIS messages', async () => {
     if (qr.stub) {
       assert.isArray(fixures.batch);
-      assert.equal(fixures.batch.length, 3);
+      assert.equal(fixures.batch.length, 4);
     }
     const res = await insertAISBatch(fixures.batch);
     assert.equal(fixures.batch.length, res);
@@ -83,8 +83,11 @@ describe('deleteAIS', () => {
  */
 describe('readAllPositions', () => {
   it('Test reading of all recent ship positions', async () => {
+    if (qr.stub) {
+      assert.isArray(fixures.recentShipPositions);
+    }
     const res = await readAllPositions();
-  });
+  }).timeout(10000);
 });
 
 /**
@@ -98,7 +101,9 @@ describe('readAllPositions', () => {
  */
 describe('readSinglePosition', () => {
   it('Test read of most recent ship position', async () => {
-    const res = await readSinglePosition();
+    const res = await readSinglePosition(219022256);
+    assert.deepEqual(res, fixures.mostRecentPosition);
+    assert.isArray(res);
   });
 });
 
