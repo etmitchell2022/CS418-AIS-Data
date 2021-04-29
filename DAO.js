@@ -69,14 +69,22 @@ const insertSingleAIS = async (aisMessage) => {
  * @returns Number of Deletions
  *
  */
-const deleteAIS = async () => {
+const deleteAIS = async (currentTime, timestamp) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    await client.connect();
+    const ais = client.db(dbName).collection('ais');
+    const data = await ais
+      .find({
+        Timestamp: {
+          $gt: new Date(Date.now() - 5 * 60 * 1000),
+        },
+      })
+      .count();
+    console.log(data);
+    return data;
   } finally {
     client.close();
   }

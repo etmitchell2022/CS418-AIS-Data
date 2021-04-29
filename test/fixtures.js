@@ -57,8 +57,8 @@ const batch = [
 ];
 
 const singleMessage = {
-  Timestamp: '2021-04-27-18T00:00:00.000+0000',
-  Class: 'Class A',
+  Timestamp: new Date(),
+  Class: 'Class test',
   MMSI: 111122223333,
   MsgType: 'position_report',
   Position: { type: 'Point', coordinates: [57.120583, 8.599218] },
