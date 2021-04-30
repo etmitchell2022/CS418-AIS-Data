@@ -1,5 +1,4 @@
 const MongoClient = require('mongodb').MongoClient;
-const tile = require('./tile_map');
 
 // Connection URL
 const url = 'mongodb://localhost:27017';
@@ -206,39 +205,37 @@ const readRecentPosition = async () => {
     useUnifiedTopology: true,
   });
   try {
-    await client.connect();
-    const vessel = client.db(dbname).collection('vessel')
-    const res = await vessel.find([
-    {
-      $lookup: {
-        from: 'mapviews',
-        localField: 'mapview_3',
-        foreignField: 'travelID',
-        as: 'mapview_id',
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        mapview_id: { north: 1, east: 1, south: 1, west: 1 },
-      },
-    },
-  ])
-  .toArray();
-  let tileCoordinates = [];
-    res.forEach((x) => {
-      Object.values(x).forEach((y) => {
-        Object.values(y[0]).forEach((d) => {
-          tileCoordinates.push(d);
-        });
-      });
-    });
-    let north = tileCoordinates[3];
-    let east = tileCoordinates[2];
-    let south = tileCoordinates[1];
-    let west = tileCoordinates[0];
-
-    
+    //   await client.connect();
+    //   const vessel = client.db(dbName).collection('vessels')
+    //   const res = await vessel.find([
+    //   {
+    //     $lookup: {
+    //       from: 'mapviews',
+    //       localField: 'mapview_3',
+    //       foreignField: 'travelID',
+    //       as: 'mapview_id',
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       _id: 0,
+    //       mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+    //     },
+    //   },
+    // ])
+    // .toArray();
+    // let tileCoordinates = [];
+    //   res.forEach((x) => {
+    //     Object.values(x).forEach((y) => {
+    //       Object.values(y[0]).forEach((d) => {
+    //         tileCoordinates.push(d);
+    //       });
+    //     });
+    //   });
+    //   let north = tileCoordinates[3];
+    //   let east = tileCoordinates[2];
+    //   let south = tileCoordinates[1];
+    //   let west = tileCoordinates[0];
   } finally {
     client.close();
   }
@@ -286,75 +283,76 @@ const readAllPorts = async (portName, portCountry) => {
  *
  * @returns If unique matching port: Array of Position documents (see above). Otherwise: an Array of Port documents.
  */
-const tileShipPositions = async () => {
+const tileShipPositions = async (portName, portCountry) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    await client.connect();
-    //Join ports with mapviews using mapView Id as foreign key and find coordinates covered by maptile
-    //Compare coordinates with position report coodinates. 4 seperate conditions
-    const ports = client.db(dbName).collection('ports');
-    const res = await ports
-      .aggregate([
-        { $match: { country: 'Denmark', port_location: 'Grenaa' } },
-        {
-          $lookup: {
-            from: 'mapviews',
-            localField: 'mapview_3',
-            foreignField: 'id',
-            as: 'mapview_id',
+    if (typeof portName === 'string' && typeof portCountry === 'string') {
+      await client.connect();
+      const ports = client.db(dbName).collection('ports');
+      const res = await ports
+        .aggregate([
+          { $match: { country: 'Sweden', port_location: 'Halmstad' } },
+          {
+            $lookup: {
+              from: 'mapviews',
+              localField: 'mapview_3',
+              foreignField: 'id',
+              as: 'mapview_id',
+            },
           },
-        },
-        {
-          $project: {
-            _id: 0,
-            mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+          {
+            $project: {
+              _id: 0,
+              mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+            },
           },
-        },
-      ])
-      .toArray();
-    let tileCoordinates = [];
-    res.forEach((x) => {
-      Object.values(x).forEach((y) => {
-        Object.values(y[0]).forEach((d) => {
-          tileCoordinates.push(d);
+        ])
+        .toArray();
+      let tileCoordinates = [];
+      res.forEach((x) => {
+        Object.values(x).forEach((y) => {
+          Object.values(y[0]).forEach((d) => {
+            tileCoordinates.push(d);
+          });
         });
       });
-    });
-    let north = tileCoordinates[3];
-    let east = tileCoordinates[2];
-    let south = tileCoordinates[1];
-    let west = tileCoordinates[0];
+      let north = tileCoordinates[3];
+      let east = tileCoordinates[2];
+      let south = tileCoordinates[1];
+      let west = tileCoordinates[0];
 
-    const ais = client.db(dbName).collection('ais');
-    const positionReport = await ais
-      .find({
-        $and: [
-          {
-            'Position.coordinates.1': {
-              $lt: east,
+      const ais = client.db(dbName).collection('ais');
+      const positionReport = await ais
+        .find({
+          $and: [
+            {
+              'Position.coordinates.1': {
+                $lt: east,
+              },
             },
-          },
-          {
-            'Position.coordinates.1': {
-              $gt: west,
+            {
+              'Position.coordinates.1': {
+                $gt: west,
+              },
             },
-          },
-          {
-            'Position.coordinates.0': {
-              $lt: north,
+            {
+              'Position.coordinates.0': {
+                $lt: north,
+              },
             },
-          },
-          {
-            'Position.coordinates.0': {
-              $gt: south,
+            {
+              'Position.coordinates.0': {
+                $gt: south,
+              },
             },
-          },
-        ],
-      })
-      .toArray();
-    console.log(positionReport);
+          ],
+        })
+        .toArray();
+      return positionReport;
+    }
+    return 'Parameters must be strings';
   } finally {
     client.close();
   }

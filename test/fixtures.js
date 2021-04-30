@@ -181,6 +181,45 @@ const directions = [
   },
 ];
 
+const tilePositions = [
+  {
+    Timestamp: '2020-11-18T00:23:14.000Z',
+    Class: 'Class A',
+    MMSI: 265608060,
+    MsgType: 'position_report',
+    Position: { type: 'Point', coordinates: [Array] },
+    Status: 'Under way using engine',
+    RoT: 0,
+    SoG: 0,
+    CoG: 48.7,
+    Heading: 23,
+  },
+  {
+    Timestamp: '2020-11-18T00:23:24.000Z',
+    Class: 'Class A',
+    MMSI: 265608060,
+    MsgType: 'position_report',
+    Position: { type: 'Point', coordinates: [Array] },
+    Status: 'Under way using engine',
+    RoT: 0,
+    SoG: 0,
+    CoG: 301.7,
+    Heading: 23,
+  },
+  {
+    Timestamp: '2020-11-18T00:23:43.000Z',
+    Class: 'Class A',
+    MMSI: 265608060,
+    MsgType: 'position_report',
+    Position: { type: 'Point', coordinates: [Array] },
+    Status: 'Under way using engine',
+    RoT: 0,
+    SoG: 0,
+    CoG: 29.2,
+    Heading: 23,
+  },
+];
+
 module.exports = {
   batch,
   singleMessage,
@@ -189,4 +228,5 @@ module.exports = {
   recentShipPositions,
   mostRecentPosition,
   directions,
+  tilePositions,
 };

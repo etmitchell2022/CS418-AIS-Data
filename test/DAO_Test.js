@@ -172,6 +172,15 @@ describe('readAllPorts', () => {
  */
 describe('tileShipPosition', () => {
   it('Test read of all ship positions in tile of scale 3 containing a given port', async () => {
-    const res = await tileShipPositions();
+    if (qr.stub) {
+      assert.isArray(fixures.tilePositions)
+      assert.equal(3, fixures.tilePositions.length)
+    }
+    const res = await tileShipPositions('Sweden', 'Halmstad');
+    assert.isArray(res);
+    assert.equal(res.length, 814);
+    //Test for invalid parameters
+    const error = await tileShipPositions(321321, 321321);
+    assert.equal(error, 'Parameters must be strings');
   });
 });
