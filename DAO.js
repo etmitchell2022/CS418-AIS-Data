@@ -358,6 +358,116 @@ const tileShipPositions = async (portName, portCountry) => {
   }
 };
 
+/**
+ * Read last 5 positions of given MMSI
+ *
+ * @params - MMSI
+ *
+ * Data - N/A
+ *
+ * @returns Document of the form {MMSI: ..., Positions: [{"lat": ..., "long": ...}, ...], "IMO": ... }
+ */
+const readFivePositions = async () => {
+  const client = new MongoClient('mongodb://localhost:27017', {
+    useUnifiedTopology: true,
+  });
+  try {
+    return new Promise((resolve) => {
+      resolve('NOT IMPLEMENTED');
+    });
+  } finally {
+    client.close();
+  }
+};
+
+/**
+ * Read most recents positions of ships headed to port with given Id (4)
+ *
+ * @params - Port ID
+ *
+ * Data N/A
+ *
+ * @returns - Array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...}
+ */
+const recentPositionsToPort = async () => {
+  const client = new MongoClient('mongodb://localhost:27017', {
+    useUnifiedTopology: true,
+  });
+  try {
+    return new Promise((resolve) => {
+      resolve('NOT IMPLEMENTED');
+    });
+  } finally {
+    client.close();
+  }
+};
+
+/**
+ * Read most recent positions of ships headed to given port (as read from static data, or user input) (4)
+ *
+ * @params - Port Name, Country
+ *
+ * Data - N/A
+ *
+ * @returns - If unique matching port: array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...} Otherwise: an Array of Port documents.
+ */
+const readPositionToPortFromStatic = async () => {
+  const client = new MongoClient('mongodb://localhost:27017', {
+    useUnifiedTopology: true,
+  });
+  try {
+    return new Promise((resolve) => {
+      resolve('NOT IMPLEMENTED');
+    });
+  } finally {
+    client.close();
+  }
+};
+
+/**
+ * Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it;
+ *
+ * @params - Map Tile ID
+ *
+ * Data - N/A
+ *
+ * @returns - Array of map tile description documents
+ */
+const backgroundMapTile = async () => {
+  const client = new MongoClient('mongodb://localhost:27017', {
+    useUnifiedTopology: true,
+  });
+  try {
+    return new Promise((resolve) => {
+      resolve('NOT IMPLEMENTED');
+    });
+  } finally {
+    client.close();
+  }
+};
+
+/**
+ * Given a tile Id, get the actual tile (a PNG file) (4)
+ *
+ * @params - Map Tile ID
+ *
+ * Data - N/A
+ *
+ * @returns - Binary Data
+ */
+const getTilePNG = async () => {
+  const client = new MongoClient('mongodb://localhost:27017', {
+    useUnifiedTopology: true,
+  });
+  try {
+    return new Promise((resolve) => {
+      resolve('NOT IMPLEMENTED');
+    });
+  } finally {
+    client.close();
+  }
+};
+
 module.exports = {
   insertAISBatch,
   insertSingleAIS,
@@ -368,5 +478,10 @@ module.exports = {
   readRecentPosition,
   readAllPorts,
   tileShipPositions,
+  readFivePositions,
+  recentPositionsToPort,
+  readPositionToPortFromStatic,
+  backgroundMapTile,
+  getTilePNG,
   stub,
 };

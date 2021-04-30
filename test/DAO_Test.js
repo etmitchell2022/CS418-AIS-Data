@@ -14,6 +14,11 @@ const {
   readRecentPosition,
   readAllPorts,
   tileShipPositions,
+  readFivePositions,
+  recentPositionsToPort,
+  readPositionToPortFromStatic,
+  backgroundMapTile,
+  getTilePNG,
 } = qr;
 
 /**
@@ -87,7 +92,7 @@ describe('readAllPositions', () => {
       assert.isArray(fixures.recentShipPositions);
     }
     const res = await readAllPositions();
-  }).timeout(10000);
+  }).timeout(15000);
 });
 
 /**
@@ -173,8 +178,8 @@ describe('readAllPorts', () => {
 describe('tileShipPosition', () => {
   it('Test read of all ship positions in tile of scale 3 containing a given port', async () => {
     if (qr.stub) {
-      assert.isArray(fixures.tilePositions)
-      assert.equal(3, fixures.tilePositions.length)
+      assert.isArray(fixures.tilePositions);
+      assert.equal(3, fixures.tilePositions.length);
     }
     const res = await tileShipPositions('Sweden', 'Halmstad');
     assert.isArray(res);
@@ -182,5 +187,80 @@ describe('tileShipPosition', () => {
     //Test for invalid parameters
     const error = await tileShipPositions(321321, 321321);
     assert.equal(error, 'Parameters must be strings');
+  });
+});
+
+/**
+ * Read last 5 positions of given MMSI
+ *
+ * @params - MMSI
+ *
+ * Data - N/A
+ *
+ * @returns Document of the form {MMSI: ..., Positions: [{"lat": ..., "long": ...}, ...], "IMO": ... }
+ */
+describe('readFivePositions', () => {
+  it('Read last 5 positions of given MMSI', async () => {
+    const res = await readFivePositions();
+  });
+});
+
+/**
+ * Read most recents positions of ships headed to port with given Id (4)
+ *
+ * @params - Port ID
+ *
+ * Data N/A
+ *
+ * @returns - Array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...}
+ */
+describe('recentPositionsToPort', () => {
+  it('Read most recents positions of ships headed to port with given Id', async () => {
+    const res = await recentPositionsToPort();
+  });
+});
+
+/**
+ * Read most recent positions of ships headed to given port (as read from static data, or user input) (4)
+ *
+ * @params - Port Name, Country
+ *
+ * Data - N/A
+ *
+ * @returns - If unique matching port: array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...} Otherwise: an Array of Port documents.
+ */
+describe('readPositionToPortFromStatic', () => {
+  it('Read most recent positions of ships headed to given port (as read from static data, or user input)', async () => {
+    const res = await readPositionToPortFromStatic();
+  });
+});
+
+/**
+ * Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it;
+ *
+ * @params - Map Tile ID
+ *
+ * Data - N/A
+ *
+ * @returns - Array of map tile description documents
+ */
+describe('backgroundTileMap', () => {
+  it('Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it', async () => {
+    const res = await backgroundMapTile();
+  });
+});
+
+/**
+ * Given a tile Id, get the actual tile (a PNG file) (4)
+ *
+ * @params - Map Tile ID
+ *
+ * Data - N/A
+ *
+ * @returns - Binary Data
+ */
+describe('getTilePNG', () => {
+  it('Given a tile Id, get the actual tile (a PNG file)', async () => {
+    const res = await getTilePNG();
   });
 });

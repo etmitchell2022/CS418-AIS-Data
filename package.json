@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha",
-    "server": "nodemon server.js"
+    "test": "mocha"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +14,7 @@
     "http": "0.0.1-security",
     "mocha": "^8.3.2",
     "mongodb": "^3.6.6",
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.7",
+    "url": "^0.11.0"
   }
 }
