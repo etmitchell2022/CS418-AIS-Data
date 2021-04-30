@@ -168,6 +168,19 @@ const readPorts = [
   },
 ];
 
+const directions = [
+  {
+    mapview_id: [
+      {
+        west: 11.5,
+        south: 55.75,
+        east: 12,
+        north: 56,
+      },
+    ],
+  },
+];
+
 module.exports = {
   batch,
   singleMessage,
@@ -175,4 +188,5 @@ module.exports = {
   readPorts,
   recentShipPositions,
   mostRecentPosition,
+  directions,
 };

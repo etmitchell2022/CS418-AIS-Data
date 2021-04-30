@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const tile = require('./tile_map');
 
 // Connection URL
 const url = 'mongodb://localhost:27017';
@@ -74,12 +75,13 @@ const deleteAIS = async (currentTime, timestamp) => {
     useUnifiedTopology: true,
   });
   try {
+    currentTime = Date.now();
     await client.connect();
     const ais = client.db(dbName).collection('ais');
     const data = await ais
       .find({
         Timestamp: {
-          $gt: new Date(Date.now() - 5 * 60 * 1000),
+          $gt: new Date(currentTime - 5 * 60 * 1000),
         },
       })
       .count();
@@ -204,9 +206,6 @@ const readRecentPosition = async () => {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
   } finally {
     client.close();
   }
@@ -260,6 +259,69 @@ const tileShipPositions = async () => {
   });
   try {
     await client.connect();
+    //Join ports with mapviews using mapView Id as foreign key and find coordinates covered by maptile
+    //Compare coordinates with position report coodinates. 4 seperate conditions
+    const ports = client.db(dbName).collection('ports');
+    const res = await ports
+      .aggregate([
+        { $match: { country: 'Denmark', port_location: 'Grenaa' } },
+        {
+          $lookup: {
+            from: 'mapviews',
+            localField: 'mapview_3',
+            foreignField: 'id',
+            as: 'mapview_id',
+          },
+        },
+        {
+          $project: {
+            _id: 0,
+            mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+          },
+        },
+      ])
+      .toArray();
+    let tileCoordinates = [];
+    res.forEach((x) => {
+      Object.values(x).forEach((y) => {
+        Object.values(y[0]).forEach((d) => {
+          tileCoordinates.push(d);
+        });
+      });
+    });
+    let north = tileCoordinates[3];
+    let east = tileCoordinates[2];
+    let south = tileCoordinates[1];
+    let west = tileCoordinates[0];
+
+    const ais = client.db(dbName).collection('ais');
+    const positionReport = await ais
+      .find({
+        $and: [
+          {
+            'Position.coordinates.1': {
+              $lt: east,
+            },
+          },
+          {
+            'Position.coordinates.1': {
+              $gt: west,
+            },
+          },
+          {
+            'Position.coordinates.0': {
+              $lt: north,
+            },
+          },
+          {
+            'Position.coordinates.0': {
+              $gt: south,
+            },
+          },
+        ],
+      })
+      .toArray();
+    console.log(positionReport);
   } finally {
     client.close();
   }
