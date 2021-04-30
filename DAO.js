@@ -206,6 +206,39 @@ const readRecentPosition = async () => {
     useUnifiedTopology: true,
   });
   try {
+    await client.connect();
+    const vessel = client.db(dbname).collection('vessel')
+    const res = await vessel.find([
+    {
+      $lookup: {
+        from: 'mapviews',
+        localField: 'mapview_3',
+        foreignField: 'travelID',
+        as: 'mapview_id',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+      },
+    },
+  ])
+  .toArray();
+  let tileCoordinates = [];
+    res.forEach((x) => {
+      Object.values(x).forEach((y) => {
+        Object.values(y[0]).forEach((d) => {
+          tileCoordinates.push(d);
+        });
+      });
+    });
+    let north = tileCoordinates[3];
+    let east = tileCoordinates[2];
+    let south = tileCoordinates[1];
+    let west = tileCoordinates[0];
+
+    
   } finally {
     client.close();
   }
