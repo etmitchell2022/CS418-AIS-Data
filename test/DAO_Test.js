@@ -89,7 +89,7 @@ describe('deleteAIS', () => {
 describe('readAllPositions', () => {
   it('Test reading of all recent ship positions', async () => {
     if (qr.stub) {
-      assert.isArray(fixtures.recentShipPositions);
+      assert.isArray(fixtures.allRecentShipPositions);
     }
     const res = await readAllPositions();
   }).timeout(15000);
@@ -143,7 +143,7 @@ describe('readVesselInfo', () => {
 describe('readRecentPosition', () => {
   it('Test reading of ship positions in given tile', async () => {
     const res = await readRecentPosition();
-  });
+  }).timeout(15000);
 });
 
 /**

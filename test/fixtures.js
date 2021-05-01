@@ -68,66 +68,15 @@ const singleMessage = {
   Heading: 55,
 };
 
-const recentShipPositions = [
-  {
-    Timestamp: '2020-11-18T02:38:22.000+0000',
-    Class: 'Class A',
-    MMSI: 219022256,
-    MsgType: 'position_report',
-    Position: {
-      type: 'Point',
-      coordinates: [54.572058, 11.928778],
-    },
-    Status: 'Under way using engine',
-    RoT: 0.0,
-    SoG: 0.0,
-    CoG: 264.6,
-    Heading: 207,
-  },
-  {
-    Timestamp: '2020-11-18T02:38:22.000+0000',
-    Class: 'Class A',
-    MMSI: 375203000,
-    MsgType: 'position_report',
-    Position: {
-      type: 'Point',
-      coordinates: [54.520033, 12.182773],
-    },
-    Status: 'Under way using engine',
-    RoT: 0.0,
-    SoG: 6.2,
-    CoG: 193.3,
-    Heading: 194,
-  },
-  {
-    Timestamp: '2020-11-18T02:38:22.000+0000',
-    Class: 'Class A',
-    MMSI: 266343000,
-    MsgType: 'position_report',
-    Position: {
-      type: 'Point',
-      coordinates: [55.503335, 10.874448],
-    },
-    Status: 'Under way using engine',
-    RoT: 0.0,
-    SoG: 18.8,
-    CoG: 146.6,
-    Heading: 149,
-  },
-  {
-    Timestamp: '2020-11-18T02:38:22.000+0000',
-    Class: 'Class A',
-    MMSI: 235090202,
-    MsgType: 'position_report',
-    Position: {
-      type: 'Point',
-      coordinates: [54.646827, 11.355255],
-    },
-    Status: 'Restricted maneuverability',
-    SoG: 0.1,
-    CoG: 64.9,
-    Heading: 270,
-  },
+const allRecentShipPositions = [
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
+  { MMSI: 111122223333, Position: { lat: 57.120583, long: 8.599218 } },
 ];
 
 const mostRecentPosition = { MMSI: 219022256, lat: 54.572058, long: 11.928778 };
@@ -152,6 +101,16 @@ const vesselInfo = {
   C: 6,
   D: 5,
 };
+
+const readRecentTilePositions = [
+  { MMSI: 211379770, Position: { lat: 54.681672, long: 8.75354 } },
+  { MMSI: 211379770, Position: { lat: 54.681682, long: 8.75352 } },
+  { MMSI: 211493380, Position: { lat: 54.730433, long: 8.689737 } },
+  { MMSI: 211255580, Position: { lat: 54.501313, long: 8.702548 } },
+  { MMSI: 211379770, Position: { lat: 54.681683, long: 8.753525 } },
+  { MMSI: 211493380, Position: { lat: 54.730433, long: 8.689735 } },
+  { MMSI: 211255580, Position: { lat: 54.501313, long: 8.702553 } },
+];
 
 const readPorts = [
   {
@@ -238,10 +197,11 @@ module.exports = {
   singleMessage,
   vesselInfo,
   readPorts,
-  recentShipPositions,
+  allRecentShipPositions,
   mostRecentPosition,
   directions,
   tilePositions,
   fivePositions,
+  readRecentTilePositions,
   binary,
 };

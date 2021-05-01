@@ -109,8 +109,17 @@ const readAllPositions = async () => {
     const ais = client.db(dbName).collection('ais');
     const ships = await ais
       .aggregate([{ $sort: { Timestamp: -1 } }], { allowDiskUse: true })
-      .project({ _id: 0 })
+      .project({
+        _id: 0,
+        MMSI: 1,
+        Position: {
+          lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+          long: { $arrayElemAt: ['$Position.coordinates', 1] },
+        },
+        IMO: 1,
+      })
       .toArray();
+      console.log(ships)
     return ships;
   } finally {
     client.close();
@@ -200,42 +209,74 @@ const readVesselInfo = async (mmsi, imo, name, callsign) => {
  *
  * @returns Array of ship documents
  */
-const readRecentPosition = async () => {
+const readRecentPosition = async (tileId) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    //   await client.connect();
-    //   const vessel = client.db(dbName).collection('vessels')
-    //   const res = await vessel.find([
-    //   {
-    //     $lookup: {
-    //       from: 'mapviews',
-    //       localField: 'mapview_3',
-    //       foreignField: 'travelID',
-    //       as: 'mapview_id',
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 0,
-    //       mapview_id: { north: 1, east: 1, south: 1, west: 1 },
-    //     },
-    //   },
-    // ])
-    // .toArray();
-    // let tileCoordinates = [];
-    //   res.forEach((x) => {
-    //     Object.values(x).forEach((y) => {
-    //       Object.values(y[0]).forEach((d) => {
-    //         tileCoordinates.push(d);
-    //       });
-    //     });
-    //   });
-    //   let north = tileCoordinates[3];
-    //   let east = tileCoordinates[2];
-    //   let south = tileCoordinates[1];
-    //   let west = tileCoordinates[0];
+    await client.connect();
+    const tiles = client.db(dbName).collection('mapviews');
+    const res = await tiles
+      .aggregate([
+        { $match: { id: 5134 } },
+        {
+          $project: {
+            _id: 0,
+            north: 1,
+            east: 1,
+            south: 1,
+            west: 1,
+          },
+        },
+      ])
+      .toArray();
+    const north = res[0].north;
+    const east = res[0].east;
+    const south = res[0].south;
+    const west = res[0].west;
+
+    const ais = client.db(dbName).collection('ais');
+    const positionReport = await ais
+      .find(
+        {
+          $and: [
+            {
+              'Position.coordinates.1': {
+                $lte: east,
+              },
+            },
+            {
+              'Position.coordinates.1': {
+                $gte: west,
+              },
+            },
+            {
+              'Position.coordinates.0': {
+                $lte: north,
+              },
+            },
+            {
+              'Position.coordinates.0': {
+                $gte: south,
+              },
+            },
+          ],
+        },
+        {
+          allowDiskUse: true,
+        }
+      )
+      .project({
+        _id: 0,
+        MMSI: 1,
+        Position: {
+          lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+          long: { $arrayElemAt: ['$Position.coordinates', 1] },
+        },
+        IMO: 1,
+      })
+      .sort({ Timestamp: -1 })
+      .toArray();
   } finally {
     client.close();
   }
