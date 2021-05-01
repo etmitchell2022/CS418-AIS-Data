@@ -192,6 +192,9 @@ const fivePositions = {
 
 const binary = '1010010 1001111 1001111 1010100 101110 1110000 1101110 1100111';
 
+const shipPort = { id: 219022271, lat: 54.572071, long: 11.928771 };
+
+
 module.exports = {
   batch,
   singleMessage,

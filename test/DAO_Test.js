@@ -225,7 +225,12 @@ describe('readFivePositions', () => {
  */
 describe('recentPositionsToPort', () => {
   it('Read most recents positions of ships headed to port with given Id', async () => {
-    const res = await recentPositionsToPort();
+    if (qr.stub) {
+      assert.isObject(fixtures.mostRecentPosition);
+    }
+    const res = await recentPositionsToPort(219022271);
+    assert.deepEqual(res, fixtures.mostRecentPosition);
+    assert.isObject(res);
   });
 });
 
