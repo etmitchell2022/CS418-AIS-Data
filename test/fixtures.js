@@ -220,6 +220,17 @@ const tilePositions = [
   },
 ];
 
+const fivePositions = {
+  MMSI: 304858000,
+  Positions: [
+    { lat: 55.185158, long: 14.195187 },
+    { lat: 55.185118, long: 14.194392 },
+    { lat: 55.185087, long: 14.193783 },
+    { lat: 55.185075, long: 14.193517 },
+    { lat: 55.185048, long: 14.19317 },
+  ],
+};
+
 module.exports = {
   batch,
   singleMessage,
@@ -229,4 +240,5 @@ module.exports = {
   mostRecentPosition,
   directions,
   tilePositions,
+  fivePositions
 };

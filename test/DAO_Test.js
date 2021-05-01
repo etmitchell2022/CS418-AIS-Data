@@ -1,6 +1,6 @@
 var assert = require('chai').assert;
 const qr = require('../DAO');
-const fixures = require('./fixtures');
+const fixtures = require('./fixtures');
 
 qr.stub = true;
 
@@ -33,11 +33,11 @@ const {
 describe('insertAISBatch', () => {
   it('Tests insertion of a batch of AIS messages', async () => {
     if (qr.stub) {
-      assert.isArray(fixures.batch);
-      assert.equal(fixures.batch.length, 4);
+      assert.isArray(fixtures.batch);
+      assert.equal(fixtures.batch.length, 4);
     }
-    const res = await insertAISBatch(fixures.batch);
-    assert.equal(fixures.batch.length, res);
+    const res = await insertAISBatch(fixtures.batch);
+    assert.equal(fixtures.batch.length, res);
   });
 });
 
@@ -53,10 +53,10 @@ describe('insertAISBatch', () => {
 describe('insertSingleAIS', () => {
   it('Tests insertion of single AIS message', async () => {
     if (qr.stub) {
-      assert.isObject(fixures.singleMessage);
-      assert.isNotEmpty(fixures.singleMessage);
+      assert.isObject(fixtures.singleMessage);
+      assert.isNotEmpty(fixtures.singleMessage);
     }
-    const res = await insertSingleAIS(fixures.singleMessage);
+    const res = await insertSingleAIS(fixtures.singleMessage);
     assert.isString(res);
     assert.equal('1', res);
   });
@@ -89,7 +89,7 @@ describe('deleteAIS', () => {
 describe('readAllPositions', () => {
   it('Test reading of all recent ship positions', async () => {
     if (qr.stub) {
-      assert.isArray(fixures.recentShipPositions);
+      assert.isArray(fixtures.recentShipPositions);
     }
     const res = await readAllPositions();
   }).timeout(15000);
@@ -107,10 +107,10 @@ describe('readAllPositions', () => {
 describe('readSinglePosition', () => {
   it('Test read of most recent ship position', async () => {
     if (qr.stub) {
-      assert.isObject(fixures.mostRecentPosition);
+      assert.isObject(fixtures.mostRecentPosition);
     }
     const res = await readSinglePosition(219022256);
-    assert.deepEqual(res, fixures.mostRecentPosition);
+    assert.deepEqual(res, fixtures.mostRecentPosition);
     assert.isObject(res);
   });
 });
@@ -162,7 +162,7 @@ describe('readAllPorts', () => {
     }
     const res = await readAllPorts('Frederikshavn', 'Denmark');
     assert.isArray(res);
-    assert.deepEqual(res, fixures.readPorts);
+    assert.deepEqual(res, fixtures.readPorts);
   });
 });
 
@@ -178,8 +178,8 @@ describe('readAllPorts', () => {
 describe('tileShipPosition', () => {
   it('Test read of all ship positions in tile of scale 3 containing a given port', async () => {
     if (qr.stub) {
-      assert.isArray(fixures.tilePositions);
-      assert.equal(3, fixures.tilePositions.length);
+      assert.isArray(fixtures.tilePositions);
+      assert.equal(3, fixtures.tilePositions.length);
     }
     const res = await tileShipPositions('Sweden', 'Halmstad');
     assert.isArray(res);
@@ -201,7 +201,16 @@ describe('tileShipPosition', () => {
  */
 describe('readFivePositions', () => {
   it('Read last 5 positions of given MMSI', async () => {
-    const res = await readFivePositions();
+    if (qr.stub) {
+      assert.isObject(fixtures.fivePositions);
+      assert.isNotEmpty(fixtures.fivePositions);
+    }
+    const res = await readFivePositions(304858000);
+    assert.isObject(res);
+    assert.deepEqual(res, fixtures.fivePositions);
+
+    const error = await readFivePositions('123456');
+    assert.equal(error, 'Parameter must be an integer');
   });
 });
 

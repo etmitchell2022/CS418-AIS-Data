@@ -367,14 +367,85 @@ const tileShipPositions = async (portName, portCountry) => {
  *
  * @returns Document of the form {MMSI: ..., Positions: [{"lat": ..., "long": ...}, ...], "IMO": ... }
  */
-const readFivePositions = async () => {
+const readFivePositions = async (mmsi) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    if (Number.isInteger(mmsi)) {
+      await client.connect();
+      const ais = client.db(dbName).collection('ais');
+      const ships = await ais
+        .aggregate([{ $match: { MMSI: mmsi } }, { $sort: { Timestamp: -1 } }], {
+          allowDiskUse: true,
+        })
+        .project({
+          _id: 0,
+          MMSI: 1,
+          Position: {
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
+          },
+          IMO: 1,
+        })
+        .limit(5)
+        .toArray();
+      if (ships[0]['IMO']) {
+        shipDocument = {
+          MMSI: ships[0]['MMSI'],
+          Positions: [
+            {
+              lat: ships[0]['Position']['lat'],
+              long: ships[0]['Position']['long'],
+            },
+            {
+              lat: ships[1]['Position']['lat'],
+              long: ships[1]['Position']['long'],
+            },
+            {
+              lat: ships[2]['Position']['lat'],
+              long: ships[2]['Position']['long'],
+            },
+            {
+              lat: ships[3]['Position']['lat'],
+              long: ships[3]['Position']['long'],
+            },
+            {
+              lat: ships[4]['Position']['lat'],
+              long: ships[4]['Position']['long'],
+            },
+          ],
+          IMO: ships[0]['IMO'],
+        };
+      }
+      shipDocument = {
+        MMSI: ships[0]['MMSI'],
+        Positions: [
+          {
+            lat: ships[0]['Position']['lat'],
+            long: ships[0]['Position']['long'],
+          },
+          {
+            lat: ships[1]['Position']['lat'],
+            long: ships[1]['Position']['long'],
+          },
+          {
+            lat: ships[2]['Position']['lat'],
+            long: ships[2]['Position']['long'],
+          },
+          {
+            lat: ships[3]['Position']['lat'],
+            long: ships[3]['Position']['long'],
+          },
+          {
+            lat: ships[4]['Position']['lat'],
+            long: ships[4]['Position']['long'],
+          },
+        ],
+      };
+      return shipDocument;
+    }
+    return 'Parameter must be an integer';
   } finally {
     client.close();
   }
