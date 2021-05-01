@@ -501,14 +501,31 @@ const readFivePositions = async (mmsi) => {
  *
  * @returns - Array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...}
  */
-const recentPositionsToPort = async () => {
+const recentPositionsToPort = async (portid ) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    client.connect();
+    const ais = client.db(dbName).collection("ais")
+    const ships = await ais.aggregate([{ $match: { id: portid  } }, { $sort: { Timestamp: -1 } }], {
+      allowDiskUse: true,
+    }).project({_id:0}).limit(1).toArray();
+    if(ships[0]['IMO']){
+      shipDocument = {
+       MMSI: ships[0]['MMSI'],
+      lat: ships[0]['Position']['coordinates'][0],
+      long: ships[0]['Position']['coordinates'][1],
+      IMO: ships[0]['IMO'],
+    };
+  }
+  shipDocument = {
+    MMSI: ships[0]['MMSI'],
+    lat: ships[0]['Position']['coordinates'][0],
+    long: ships[0]['Position']['coordinates'][1],
+  };
+  return shipDocument;
+
   } finally {
     client.close();
   }
