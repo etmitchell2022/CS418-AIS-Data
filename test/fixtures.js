@@ -231,6 +231,8 @@ const fivePositions = {
   ],
 };
 
+const binary = '1010010 1001111 1001111 1010100 101110 1110000 1101110 1100111';
+
 module.exports = {
   batch,
   singleMessage,
@@ -240,5 +242,6 @@ module.exports = {
   mostRecentPosition,
   directions,
   tilePositions,
-  fivePositions
+  fivePositions,
+  binary,
 };

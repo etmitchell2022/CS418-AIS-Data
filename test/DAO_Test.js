@@ -270,6 +270,14 @@ describe('backgroundTileMap', () => {
  */
 describe('getTilePNG', () => {
   it('Given a tile Id, get the actual tile (a PNG file)', async () => {
-    const res = await getTilePNG();
+    const res = await getTilePNG(1);
+    assert.isNotEmpty(res);
+    assert.equal(res.toString(), fixtures.binary);
+
+    const error = await getTilePNG('1');
+    assert.equal(error, 'Parameter must be an integer');
+
+    const noTile = await getTilePNG(4380420489032);
+    assert.equal(noTile, 'No tile found');
   });
 });

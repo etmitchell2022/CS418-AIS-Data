@@ -372,7 +372,7 @@ const readFivePositions = async (mmsi) => {
     useUnifiedTopology: true,
   });
   try {
-    if (Number.isInteger(mmsi)) {
+    if (Number.isInteger(mmsi) && mmsi !== null) {
       await client.connect();
       const ais = client.db(dbName).collection('ais');
       const ships = await ais
@@ -526,14 +526,28 @@ const backgroundMapTile = async () => {
  *
  * @returns - Binary Data
  */
-const getTilePNG = async () => {
+const getTilePNG = async (tileId) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    if (Number.isInteger(tileId)) {
+      await client.connect();
+      const mapviews = client.db(dbName).collection('mapviews');
+      const tile = await mapviews.findOne(
+        { id: tileId },
+        { projection: { _id: 0, filename: 1 } }
+      );
+      if (!tile) return 'No tile found';
+      imageBinary = tile.filename
+        .split('')
+        .map((char) => {
+          return char.charCodeAt(0).toString(2);
+        })
+        .join(' ');
+      return imageBinary;
+    }
+    return 'Parameter must be an integer';
   } finally {
     client.close();
   }
