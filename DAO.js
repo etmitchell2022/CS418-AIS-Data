@@ -542,14 +542,60 @@ const recentPositionsToPort = async (portId) => {
  *
  * @returns - If unique matching port: array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...} Otherwise: an Array of Port documents.
  */
-const readPositionToPortFromStatic = async () => {
+const readPositionToPortFromStatic = async (portName, country) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    client.connect();
+    if (portName && country) {
+      const ais = client.db(dbName).collection('ais');
+      const ships = await ais
+        .aggregate([{ $match: { Destination: portName } }])
+        .project({ _id: 0, MMSI: 1 })
+        .toArray();
+      for (let i = 0; i < ships.length; i++) {
+        const positions = await ais
+          .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
+          .project({
+            _id: 0,
+            MMSI: 1,
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
+          })
+          .sort({ Timestamp: -1 })
+          .toArray();
+        return positions;
+      }
+    }
+    if (portName && country === '') {
+      const ais = client.db(dbName).collection('ais');
+      const ships = await ais
+        .aggregate([{ $match: { Destination: portName } }])
+        .project({ _id: 0, MMSI: 1 })
+        .toArray();
+      for (let i = 0; i < ships.length; i++) {
+        const positions = await ais
+          .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
+          .project({
+            _id: 0,
+            MMSI: 1,
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
+          })
+          .sort({ Timestamp: -1 })
+          .toArray();
+        return positions;
+      }
+    }
+    if (country && portName === '') {
+      const ports = client.db(dbName).collection('ports');
+      const portCountries = await ports
+        .find({ country: country })
+        .project({ _id: 0 })
+        .toArray();
+      return portCountries;
+    }
   } finally {
     client.close();
   }

@@ -234,7 +234,6 @@ describe('recentPositionsToPort', () => {
     assert.deepEqual(res[0], fixtures.recentPositionsToPortFixture[0]);
 
     const error = await recentPositionsToPort(1234);
-    console.log(error);
     assert.equal(error, 'Parameter must be a string');
   }).timeout(8000);
 });
@@ -250,7 +249,19 @@ describe('recentPositionsToPort', () => {
  */
 describe('readPositionToPortFromStatic', () => {
   it('Read most recent positions of ships headed to given port (as read from static data, or user input)', async () => {
-    const res = await readPositionToPortFromStatic();
+    if (qr.stub) {
+      assert.isArray(fixtures.recentPositionsToPortFixture);
+      assert.equal(29, fixtures.recentPositionsToPortFixture.length);
+    }
+    const portName = await readPositionToPortFromStatic('OXELOSUND', '');
+    assert.isArray(fixtures.recentPositionsToPortFixture);
+    assert.deepEqual(portName[0], fixtures.recentPositionsToPortFixture[0]);
+
+    const ports = await readPositionToPortFromStatic('', 'Denmark');
+    assert.isArray(ports);
+
+    const both = await readPositionToPortFromStatic('OXELOSUND', 'Denmark');
+    assert.isArray(both);
   });
 });
 
