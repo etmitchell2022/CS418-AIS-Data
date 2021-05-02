@@ -142,7 +142,8 @@ describe('readVesselInfo', () => {
  */
 describe('readRecentPosition', () => {
   it('Test reading of ship positions in given tile', async () => {
-    const res = await readRecentPosition();
+    const res = await readRecentPosition(1);
+    assert.isNotEmpty(res);
   }).timeout(15000);
 });
 
@@ -226,12 +227,16 @@ describe('readFivePositions', () => {
 describe('recentPositionsToPort', () => {
   it('Read most recents positions of ships headed to port with given Id', async () => {
     if (qr.stub) {
-      assert.isObject(fixtures.mostRecentPosition);
+      assert.isArray(fixtures.recentPositionsToPortFixture);
     }
-    const res = await recentPositionsToPort(219022271);
-    assert.deepEqual(res, fixtures.mostRecentPosition);
-    assert.isObject(res);
-  });
+    const res = await recentPositionsToPort('OXELOSUND');
+    assert.isArray(fixtures.recentPositionsToPortFixture);
+    assert.deepEqual(res[0], fixtures.recentPositionsToPortFixture[0]);
+
+    const error = await recentPositionsToPort(1234);
+    console.log(error);
+    assert.equal(error, 'Parameter must be a string');
+  }).timeout(8000);
 });
 
 /**

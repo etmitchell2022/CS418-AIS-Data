@@ -119,7 +119,6 @@ const readAllPositions = async () => {
         IMO: 1,
       })
       .toArray();
-      console.log(ships)
     return ships;
   } finally {
     client.close();
@@ -218,7 +217,7 @@ const readRecentPosition = async (tileId) => {
     const tiles = client.db(dbName).collection('mapviews');
     const res = await tiles
       .aggregate([
-        { $match: { id: 5134 } },
+        { $match: { id: tileId } },
         {
           $project: {
             _id: 0,
@@ -277,6 +276,7 @@ const readRecentPosition = async (tileId) => {
       })
       .sort({ Timestamp: -1 })
       .toArray();
+    return positionReport;
   } finally {
     client.close();
   }
@@ -501,31 +501,33 @@ const readFivePositions = async (mmsi) => {
  *
  * @returns - Array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...}
  */
-const recentPositionsToPort = async (portid ) => {
+const recentPositionsToPort = async (portId) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    client.connect();
-    const ais = client.db(dbName).collection("ais")
-    const ships = await ais.aggregate([{ $match: { id: portid  } }, { $sort: { Timestamp: -1 } }], {
-      allowDiskUse: true,
-    }).project({_id:0}).limit(1).toArray();
-    if(ships[0]['IMO']){
-      shipDocument = {
-       MMSI: ships[0]['MMSI'],
-      lat: ships[0]['Position']['coordinates'][0],
-      long: ships[0]['Position']['coordinates'][1],
-      IMO: ships[0]['IMO'],
-    };
-  }
-  shipDocument = {
-    MMSI: ships[0]['MMSI'],
-    lat: ships[0]['Position']['coordinates'][0],
-    long: ships[0]['Position']['coordinates'][1],
-  };
-  return shipDocument;
-
+    if (typeof portId === 'string' && portId !== '') {
+      client.connect();
+      const ais = client.db(dbName).collection('ais');
+      const ships = await ais
+        .aggregate([{ $match: { Destination: portId } }])
+        .project({ _id: 0, MMSI: 1 })
+        .toArray();
+      for (let i = 0; i < ships.length; i++) {
+        const positions = await ais
+          .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
+          .project({
+            _id: 0,
+            MMSI: 1,
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
+          })
+          .sort({ Timestamp: -1 })
+          .toArray();
+        return positions;
+      }
+    }
+    return 'Parameter must be a string';
   } finally {
     client.close();
   }

@@ -192,8 +192,37 @@ const fivePositions = {
 
 const binary = '1010010 1001111 1001111 1010100 101110 1110000 1101110 1100111';
 
-const shipPort = { id: 219022271, lat: 54.572071, long: 11.928771 };
-
+const recentPositionsToPortFixture = [
+  { MMSI: 265411000, lat: null, long: null },
+  { MMSI: 265411000, lat: 55.239248, long: 12.886677 },
+  { MMSI: 265411000, lat: 55.239192, long: 12.887477 },
+  { MMSI: 265411000, lat: 55.239192, long: 12.887477 },
+  { MMSI: 265411000, lat: 55.239132, long: 12.888277 },
+  { MMSI: 265411000, lat: 55.239132, long: 12.888277 },
+  { MMSI: 265411000, lat: 55.239077, long: 12.889077 },
+  { MMSI: 265411000, lat: 55.239077, long: 12.889077 },
+  { MMSI: 265411000, lat: 55.239018, long: 12.889877 },
+  { MMSI: 265411000, lat: 55.238963, long: 12.890677 },
+  { MMSI: 265411000, lat: 55.238963, long: 12.890677 },
+  { MMSI: 265411000, lat: 55.238908, long: 12.891477 },
+  { MMSI: 265411000, lat: 55.238908, long: 12.891477 },
+  { MMSI: 265411000, lat: 55.238848, long: 12.892277 },
+  { MMSI: 265411000, lat: 55.238797, long: 12.893078 },
+  { MMSI: 265411000, lat: 55.238797, long: 12.893078 },
+  { MMSI: 265411000, lat: 55.238743, long: 12.89388 },
+  { MMSI: 265411000, lat: 55.238743, long: 12.89388 },
+  { MMSI: 265411000, lat: 55.238685, long: 12.894682 },
+  { MMSI: 265411000, lat: 55.238633, long: 12.895483 },
+  { MMSI: 265411000, lat: 55.238633, long: 12.895483 },
+  { MMSI: 265411000, lat: 55.238578, long: 12.896285 },
+  { MMSI: 265411000, lat: 55.238578, long: 12.896285 },
+  { MMSI: 265411000, lat: 55.238522, long: 12.897085 },
+  { MMSI: 265411000, lat: 55.238463, long: 12.897887 },
+  { MMSI: 265411000, lat: 55.238407, long: 12.898687 },
+  { MMSI: 265411000, lat: 55.238352, long: 12.899488 },
+  { MMSI: 265411000, lat: 55.238352, long: 12.899488 },
+  { MMSI: 265411000, lat: 55.23829, long: 12.900288 },
+];
 
 module.exports = {
   batch,
@@ -207,4 +236,5 @@ module.exports = {
   fivePositions,
   readRecentTilePositions,
   binary,
+  recentPositionsToPortFixture,
 };
