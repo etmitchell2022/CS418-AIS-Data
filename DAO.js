@@ -9,6 +9,34 @@ const dbName = 'projectData';
 
 stub = false;
 
+const insertTestData = async () => {
+  const client = new MongoClient('mongodb://localhost:27017', {
+    useUnifiedTopology: true,
+  });
+  try {
+    client.connect();
+    //Insert data for delete test
+    const ais = client.db(dbName).collection('ais');
+    await ais.insertOne({
+      Timestamp: '1900-11-18T04:00:00.000Z',
+      Class: 'AtoN',
+      MMSI: 992111840,
+      MsgType: 'static_data',
+      IMO: 'Unknown',
+      Name: 'WIND FARM BALTIC1NW',
+      VesselType: 'Undefined',
+      Length: 60,
+      Breadth: 60,
+      A: 30,
+      B: 30,
+      C: 30,
+      D: 30,
+    });
+  } finally {
+    client.close();
+  }
+};
+
 /**
  * Insert a batch of AIS messages (Static Data and/or Position Reports) (1)
  *
@@ -89,10 +117,13 @@ const insertSingleAIS = async () => {
  * @returns Number of Deletions
  *
  */
-const deleteAIS = async (currentTime, timestamp) => {
+const deleteAIS = async (timestamp) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
+  if (typeof timestamp !== 'string') {
+    return 'Parameter must be a date string';
+  }
   try {
     if (this.stub) {
       return fixtures.singleMessage;
@@ -102,18 +133,19 @@ const deleteAIS = async (currentTime, timestamp) => {
   }
   if (!this.stub) {
     try {
-      currentTime = Date.now();
-      await client.connect();
+      let date = new Date(timestamp);
+      let beforeDate = new Date(date);
+      beforeDate.setMinutes(beforeDate.getMinutes() - 5);
+      console.log(beforeDate.toISOString());
+
+      timestamp = await client.connect();
       const ais = client.db(dbName).collection('ais');
-      const data = await ais
-        .find({
-          Timestamp: {
-            $gt: new Date(currentTime - 5 * 60 * 1000),
-          },
-        })
-        .count();
-      console.log(data);
-      return data;
+      const data = await ais.deleteMany({
+        Timestamp: {
+          $lt: beforeDate.toISOString(),
+        },
+      });
+      return data.deletedCount;
     } finally {
       client.close();
     }
@@ -753,30 +785,46 @@ const backgroundMapTile = async (tileId) => {
     useUnifiedTopology: true,
   });
   try {
-    client.connect();
-    const mapviews = client.db(dbName).collection('mapviews');
-    const tileData = await mapviews
-      .aggregate([
-        { $match: { id: tileId } },
-        {
-          $lookup: {
-            from: 'mapviews',
-            localField: 'id',
-            foreignField: 'contained_by',
-            as: 'contained_tiles',
-          },
-        },
-        { $project: { _id: 0, contained_tiles: 1 } },
-      ])
-      .toArray();
+    if (Number.isInteger(tileId)) {
+      try {
+        if (this.stub) {
+          return portName;
+        }
+      } catch (e) {
+        return -1;
+      }
+      if (!this.stub) {
+        client.connect();
+        const mapviews = client.db(dbName).collection('mapviews');
+        const tileData = await mapviews
+          .aggregate([
+            { $match: { id: tileId } },
+            {
+              $lookup: {
+                from: 'mapviews',
+                localField: 'id',
+                foreignField: 'contained_by',
+                as: 'contained_tiles',
+              },
+            },
+            { $project: { _id: 0, contained_tiles: 1 } },
+          ])
+          .toArray();
 
-    let data = [
-      tileData[0].contained_tiles[0],
-      tileData[0].contained_tiles[1],
-      tileData[0].contained_tiles[2],
-      tileData[0].contained_tiles[3],
-    ];
-    return data;
+        delete tileData[0].contained_tiles[0]._id;
+        delete tileData[0].contained_tiles[1]._id;
+        delete tileData[0].contained_tiles[2]._id;
+        delete tileData[0].contained_tiles[3]._id;
+        let data = [
+          tileData[0].contained_tiles[0],
+          tileData[0].contained_tiles[1],
+          tileData[0].contained_tiles[2],
+          tileData[0].contained_tiles[3],
+        ];
+        return data;
+      }
+    }
+    return 'Parameter must be an integer';
   } finally {
     client.close();
   }
@@ -841,6 +889,7 @@ module.exports = {
   readPositionToPortFromStatic,
   backgroundMapTile,
   getTilePNG,
+  insertTestData,
 };
 
 exports.stub = stub;

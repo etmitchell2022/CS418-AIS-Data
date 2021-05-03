@@ -4,6 +4,7 @@ const fixtures = require('../fixtures');
 const insertData = require('../Data/sample_input.json');
 
 const {
+  insertTestData,
   insertAISBatch,
   insertSingleAIS,
   deleteAIS,
@@ -21,6 +22,14 @@ const {
 } = qr;
 
 qr.stub = true;
+
+describe('insertData', () => {
+  before(() => {
+    it('Insert all data', async () => {
+      const test = await insertTestData();
+    }).timeout(8000);
+  });
+});
 
 /**
  * Insert a batch of AIS messages (Static Data and/or Position Reports) (1)
@@ -86,9 +95,21 @@ describe('insertSingleAIS', () => {
  * @returns Number of Deletions
  */
 describe('deleteAIS', () => {
-  it('Test deleting AIS messages older than 5 minutes', async () => {
-    const res = await deleteAIS();
-  });
+  it('Test deleting AIS messages older than 5 minutes (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await deleteAIS('1900-11-18T04:10:00.000+0000');
+      assert.equal(1, res);
+    }
+  }).timeout(10000);
+});
+
+describe('deleteAIS', () => {
+  it('Test deleting AIS messages older than 5 minutes (Unit Test)', async () => {
+    if (qr.stub) {
+      const res = await deleteAIS(358923);
+      assert.equal(res, 'Parameter must be a date string');
+    }
+  }).timeout(10000);
 });
 
 /**
@@ -374,15 +395,22 @@ describe('readPositionToPortFromStatic', () => {
  */
 describe('backgroundTileMap', () => {
   it('Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it (Integration Test)', async () => {
-    const res = await backgroundMapTile(5237);
-    console.log(res)
+    if (!qr.stub) {
+      const res = await backgroundMapTile(5237);
+      assert.deepEqual(res, fixtures.backgroundMapTileData);
+
+      const error = await backgroundMapTile('5237');
+      assert.equal(error, 'Parameter must be an integer');
+    }
   });
 });
 
 describe('backgroundTileMap', () => {
   it('Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it (Unit Test)', async () => {
-    const res = await backgroundMapTile(5237);
-    console.log(res)
+    if (qr.stub) {
+      const res = await backgroundMapTile('5237');
+      assert.equal(res, 'Parameter must be an integer');
+    }
   });
 });
 
