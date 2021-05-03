@@ -20,3 +20,8 @@ db.aisdk_20201118_1000000.renameCollection('ais')
 1. To run the tests, make sure you are in the root directory of the project and enter ```npm test``` into your terminal.
     * In total there are 28 tests, each query has an integration and unit test.
     * The DAO.js and DAO_Test.js files include documentation above each function describing the purpose, any parameters, and the expected return values.
+    * In the test file, there is a timeout set for certain tests that are more costly. Depending on the machine, there is a chance that the timout set is not enough to complete the function. To fix this, simply change the timeout number in milliseconds.
+
+## Places of improvement
+1. Automatically loading all of the data through a few queries inside of a function before tests run is the first area that could be improved. Some of the queries proved to be too costly causing a memory leak to occur.
+2. Most edge cases are covered for each query however, there may be a few missing cases that were overlooked that may cause errors.
