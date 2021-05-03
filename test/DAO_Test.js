@@ -373,8 +373,16 @@ describe('readPositionToPortFromStatic', () => {
  * @returns - Array of map tile description documents
  */
 describe('backgroundTileMap', () => {
-  it('Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it', async () => {
-    const res = await backgroundMapTile();
+  it('Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it (Integration Test)', async () => {
+    const res = await backgroundMapTile(5237);
+    console.log(res)
+  });
+});
+
+describe('backgroundTileMap', () => {
+  it('Given a background map tile for zoom level 1 (2), find the 4 tiles of zoom level 2 (3) that are contained in it (Unit Test)', async () => {
+    const res = await backgroundMapTile(5237);
+    console.log(res)
   });
 });
 
@@ -396,9 +404,6 @@ describe('getTilePNG', () => {
 
       const error = await getTilePNG('1');
       assert.equal(error, 'Parameter must be an integer');
-
-      const noTile = await getTilePNG(4380420489032);
-      assert.equal(noTile, 'No tile found');
     }
   });
 });

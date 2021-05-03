@@ -748,14 +748,35 @@ const readPositionToPortFromStatic = async (portName, country) => {
  *
  * @returns - Array of map tile description documents
  */
-const backgroundMapTile = async () => {
+const backgroundMapTile = async (tileId) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    return new Promise((resolve) => {
-      resolve('NOT IMPLEMENTED');
-    });
+    client.connect();
+    const mapviews = client.db(dbName).collection('mapviews');
+    const tileData = await mapviews
+      .aggregate([
+        { $match: { id: tileId } },
+        {
+          $lookup: {
+            from: 'mapviews',
+            localField: 'id',
+            foreignField: 'contained_by',
+            as: 'contained_tiles',
+          },
+        },
+        { $project: { _id: 0, contained_tiles: 1 } },
+      ])
+      .toArray();
+
+    let data = [
+      tileData[0].contained_tiles[0],
+      tileData[0].contained_tiles[1],
+      tileData[0].contained_tiles[2],
+      tileData[0].contained_tiles[3],
+    ];
+    return data;
   } finally {
     client.close();
   }
