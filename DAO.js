@@ -1,4 +1,5 @@
 const MongoClient = require('mongodb').MongoClient;
+const fixtures = require('./fixtures');
 
 // Connection URL
 const url = 'mongodb://localhost:27017';
@@ -22,12 +23,22 @@ const insertAISBatch = async (vesselBatch) => {
     useUnifiedTopology: true,
   });
   try {
-    await client.connect();
-    const ais = client.db(dbName).collection('ais');
-    await vesselBatch.map((batch) => ais.insertOne(batch));
-    return vesselBatch.length;
-  } finally {
-    client.close();
+    if (this.stub) {
+      return vesselBatch.length;
+    }
+  } catch (e) {
+    return -1;
+  }
+
+  if (!this.stub) {
+    try {
+      await client.connect();
+      const ais = client.db(dbName).collection('ais');
+      await vesselBatch.map((batch) => ais.insertOne(batch));
+      return vesselBatch.length;
+    } finally {
+      client.close();
+    }
   }
 };
 
@@ -40,22 +51,31 @@ const insertAISBatch = async (vesselBatch) => {
  *
  * @returns 1/0 for Success/Failure
  */
-const insertSingleAIS = async (aisMessage) => {
+const insertSingleAIS = async () => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
   try {
-    await client.connect();
-    try {
-      const ais = client.db(dbName).collection('ais');
-      await ais.insertOne(aisMessage);
-      return '1';
-    } catch (error) {
-      console.log(error);
-      return '0';
+    if (this.stub) {
+      return fixtures.singleMessage;
     }
-  } finally {
-    client.close();
+  } catch (error) {
+    console.log(error);
+  }
+  if (!this.stub) {
+    try {
+      await client.connect();
+      try {
+        const ais = client.db(dbName).collection('ais');
+        await ais.insertOne(fixtures.singleMessage);
+        return '1';
+      } catch (error) {
+        console.log(error);
+        return '0';
+      }
+    } finally {
+      client.close();
+    }
   }
 };
 
@@ -74,20 +94,29 @@ const deleteAIS = async (currentTime, timestamp) => {
     useUnifiedTopology: true,
   });
   try {
-    currentTime = Date.now();
-    await client.connect();
-    const ais = client.db(dbName).collection('ais');
-    const data = await ais
-      .find({
-        Timestamp: {
-          $gt: new Date(currentTime - 5 * 60 * 1000),
-        },
-      })
-      .count();
-    console.log(data);
-    return data;
-  } finally {
-    client.close();
+    if (this.stub) {
+      return fixtures.singleMessage;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  if (!this.stub) {
+    try {
+      currentTime = Date.now();
+      await client.connect();
+      const ais = client.db(dbName).collection('ais');
+      const data = await ais
+        .find({
+          Timestamp: {
+            $gt: new Date(currentTime - 5 * 60 * 1000),
+          },
+        })
+        .count();
+      console.log(data);
+      return data;
+    } finally {
+      client.close();
+    }
   }
 };
 
@@ -105,23 +134,32 @@ const readAllPositions = async () => {
     useUnifiedTopology: true,
   });
   try {
-    client.connect();
-    const ais = client.db(dbName).collection('ais');
-    const ships = await ais
-      .aggregate([{ $sort: { Timestamp: -1 } }], { allowDiskUse: true })
-      .project({
-        _id: 0,
-        MMSI: 1,
-        Position: {
-          lat: { $arrayElemAt: ['$Position.coordinates', 0] },
-          long: { $arrayElemAt: ['$Position.coordinates', 1] },
-        },
-        IMO: 1,
-      })
-      .toArray();
-    return ships;
-  } finally {
-    client.close();
+    if (this.stub) {
+      return fixtures.allRecentShipPositions;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+  if (!this.stub) {
+    try {
+      client.connect();
+      const ais = client.db(dbName).collection('ais');
+      const ships = await ais
+        .aggregate([{ $sort: { Timestamp: -1 } }], { allowDiskUse: true })
+        .project({
+          _id: 0,
+          MMSI: 1,
+          Position: {
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
+          },
+          IMO: 1,
+        })
+        .toArray();
+      return ships;
+    } finally {
+      client.close();
+    }
   }
 };
 
@@ -139,31 +177,46 @@ const readSinglePosition = async (mmsi) => {
     useUnifiedTopology: true,
   });
   try {
-    client.connect();
-    const ais = client.db(dbName).collection('ais');
-    const ships = await ais
-      .aggregate([{ $match: { MMSI: mmsi } }, { $sort: { Timestamp: -1 } }], {
-        allowDiskUse: true,
-      })
-      .project({ _id: 0 })
-      .limit(1)
-      .toArray();
-    if (ships[0]['IMO']) {
-      shipDocument = {
-        MMSI: ships[0]['MMSI'],
-        lat: ships[0]['Position']['coordinates'][0],
-        long: ships[0]['Position']['coordinates'][1],
-        IMO: ships[0]['IMO'],
-      };
+    if (this.stub) {
+      return mmsi;
     }
-    shipDocument = {
-      MMSI: ships[0]['MMSI'],
-      lat: ships[0]['Position']['coordinates'][0],
-      long: ships[0]['Position']['coordinates'][1],
-    };
-    return shipDocument;
-  } finally {
-    client.close();
+  } catch (error) {
+    console.log(error);
+  }
+  if (!this.stub) {
+    try {
+      client.connect();
+      if (Number.isInteger(mmsi) && mmsi !== null) {
+        const ais = client.db(dbName).collection('ais');
+        const ships = await ais
+          .aggregate(
+            [{ $match: { MMSI: mmsi } }, { $sort: { Timestamp: -1 } }],
+            {
+              allowDiskUse: true,
+            }
+          )
+          .project({ _id: 0 })
+          .limit(1)
+          .toArray();
+        if (ships[0]['IMO']) {
+          shipDocument = {
+            MMSI: ships[0]['MMSI'],
+            lat: ships[0]['Position']['coordinates'][0],
+            long: ships[0]['Position']['coordinates'][1],
+            IMO: ships[0]['IMO'],
+          };
+        }
+        shipDocument = {
+          MMSI: ships[0]['MMSI'],
+          lat: ships[0]['Position']['coordinates'][0],
+          long: ships[0]['Position']['coordinates'][1],
+        };
+        return shipDocument;
+      }
+      return 'MMSI must be an integer';
+    } finally {
+      client.close();
+    }
   }
 };
 
@@ -180,23 +233,45 @@ const readVesselInfo = async (mmsi, imo, name, callsign) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
-  try {
-    await client.connect();
-    const ais = client.db(dbName).collection('ais');
-    const res = await ais
-      .find({
-        $and: [
-          {
-            $or: [{ IMO: imo }, { Name: name }, { Callsign: callsign }],
+  if (Number.isInteger(mmsi)) {
+    if (this.stub) {
+      const searchBy = {
+        mmsi,
+        imo: imo ? imo : null,
+        name: name ? name : '',
+        callsign: callsign ? callsign : '',
+      };
+      return searchBy;
+    }
+
+    try {
+      await client.connect();
+      const ais = client.db(dbName).collection('ais');
+      const res = await ais
+        .find({
+          $and: [
+            {
+              $or: [{ IMO: imo }, { Name: name }, { Callsign: callsign }],
+            },
+            { MMSI: mmsi },
+          ],
+        })
+        .project({
+          _id: 0,
+          MMSI: 1,
+          Position: {
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
           },
-          { MMSI: mmsi },
-        ],
-      })
-      .toArray();
-    return res;
-  } finally {
-    client.close();
+          IMO: 1,
+        })
+        .toArray();
+      return res;
+    } finally {
+      client.close();
+    }
   }
+  return 'Parameter must be an integer';
 };
 
 /**
@@ -213,72 +288,81 @@ const readRecentPosition = async (tileId) => {
     useUnifiedTopology: true,
   });
   try {
-    await client.connect();
-    const tiles = client.db(dbName).collection('mapviews');
-    const res = await tiles
-      .aggregate([
-        { $match: { id: tileId } },
-        {
-          $project: {
-            _id: 0,
-            north: 1,
-            east: 1,
-            south: 1,
-            west: 1,
+    if (this.stub) {
+      return tileId;
+    }
+  } catch (e) {
+    return -1;
+  }
+  if (!this.stub) {
+    try {
+      await client.connect();
+      const tiles = client.db(dbName).collection('mapviews');
+      const res = await tiles
+        .aggregate([
+          { $match: { id: tileId } },
+          {
+            $project: {
+              _id: 0,
+              north: 1,
+              east: 1,
+              south: 1,
+              west: 1,
+            },
           },
-        },
-      ])
-      .toArray();
-    const north = res[0].north;
-    const east = res[0].east;
-    const south = res[0].south;
-    const west = res[0].west;
+        ])
+        .toArray();
+      const north = res[0].north;
+      const east = res[0].east;
+      const south = res[0].south;
+      const west = res[0].west;
 
-    const ais = client.db(dbName).collection('ais');
-    const positionReport = await ais
-      .find(
-        {
-          $and: [
-            {
-              'Position.coordinates.1': {
-                $lte: east,
+      const ais = client.db(dbName).collection('ais');
+      const positionReport = await ais
+        .find(
+          {
+            $and: [
+              {
+                'Position.coordinates.1': {
+                  $lte: east,
+                },
               },
-            },
-            {
-              'Position.coordinates.1': {
-                $gte: west,
+              {
+                'Position.coordinates.1': {
+                  $gte: west,
+                },
               },
-            },
-            {
-              'Position.coordinates.0': {
-                $lte: north,
+              {
+                'Position.coordinates.0': {
+                  $lte: north,
+                },
               },
-            },
-            {
-              'Position.coordinates.0': {
-                $gte: south,
+              {
+                'Position.coordinates.0': {
+                  $gte: south,
+                },
               },
-            },
-          ],
-        },
-        {
-          allowDiskUse: true,
-        }
-      )
-      .project({
-        _id: 0,
-        MMSI: 1,
-        Position: {
-          lat: { $arrayElemAt: ['$Position.coordinates', 0] },
-          long: { $arrayElemAt: ['$Position.coordinates', 1] },
-        },
-        IMO: 1,
-      })
-      .sort({ Timestamp: -1 })
-      .toArray();
-    return positionReport;
-  } finally {
-    client.close();
+            ],
+          },
+          {
+            allowDiskUse: true,
+          }
+        )
+        .project({
+          _id: 0,
+          MMSI: 1,
+          Position: {
+            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+            long: { $arrayElemAt: ['$Position.coordinates', 1] },
+          },
+          IMO: 1,
+        })
+        .sort({ Timestamp: -1 })
+        .toArray();
+      return positionReport;
+    } finally {
+      client.close();
+    }
   }
 };
 
@@ -295,24 +379,36 @@ const readAllPorts = async (portName, portCountry) => {
   const client = new MongoClient('mongodb://localhost:27017', {
     useUnifiedTopology: true,
   });
-  try {
-    await client.connect();
-    const ports = client.db(dbName).collection('ports');
-    const res = await ports
-      .find({
-        $and: [
-          {
-            $or: [{ country: portCountry }],
-          },
-          { port_location: portName },
-        ],
-      })
-      .project({ _id: 0 })
-      .toArray();
-    return res;
-  } finally {
-    client.close();
+  if (typeof portName == 'string' && typeof portCountry == 'string') {
+    try {
+      if (this.stub) {
+        return portName;
+      }
+    } catch (e) {
+      return -1;
+    }
+    if (!this.stub) {
+      try {
+        await client.connect();
+        const ports = client.db(dbName).collection('ports');
+        const res = await ports
+          .find({
+            $and: [
+              {
+                $or: [{ country: portCountry }],
+              },
+              { port_location: portName },
+            ],
+          })
+          .project({ _id: 0 })
+          .toArray();
+        return res;
+      } finally {
+        client.close();
+      }
+    }
   }
+  return 'Parameters must be strings';
 };
 
 /**
@@ -330,68 +426,77 @@ const tileShipPositions = async (portName, portCountry) => {
   });
   try {
     if (typeof portName === 'string' && typeof portCountry === 'string') {
-      await client.connect();
-      const ports = client.db(dbName).collection('ports');
-      const res = await ports
-        .aggregate([
-          { $match: { country: 'Sweden', port_location: 'Halmstad' } },
-          {
-            $lookup: {
-              from: 'mapviews',
-              localField: 'mapview_3',
-              foreignField: 'id',
-              as: 'mapview_id',
+      try {
+        if (this.stub) {
+          return portName;
+        }
+      } catch (e) {
+        return -1;
+      }
+      if (!this.stub) {
+        await client.connect();
+        const ports = client.db(dbName).collection('ports');
+        const res = await ports
+          .aggregate([
+            { $match: { country: 'Sweden', port_location: 'Halmstad' } },
+            {
+              $lookup: {
+                from: 'mapviews',
+                localField: 'mapview_3',
+                foreignField: 'id',
+                as: 'mapview_id',
+              },
             },
-          },
-          {
-            $project: {
-              _id: 0,
-              mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+            {
+              $project: {
+                _id: 0,
+                mapview_id: { north: 1, east: 1, south: 1, west: 1 },
+              },
             },
-          },
-        ])
-        .toArray();
-      let tileCoordinates = [];
-      res.forEach((x) => {
-        Object.values(x).forEach((y) => {
-          Object.values(y[0]).forEach((d) => {
-            tileCoordinates.push(d);
+          ])
+          .toArray();
+        let tileCoordinates = [];
+        res.forEach((x) => {
+          Object.values(x).forEach((y) => {
+            Object.values(y[0]).forEach((d) => {
+              tileCoordinates.push(d);
+            });
           });
         });
-      });
-      let north = tileCoordinates[3];
-      let east = tileCoordinates[2];
-      let south = tileCoordinates[1];
-      let west = tileCoordinates[0];
+        let north = tileCoordinates[3];
+        let east = tileCoordinates[2];
+        let south = tileCoordinates[1];
+        let west = tileCoordinates[0];
 
-      const ais = client.db(dbName).collection('ais');
-      const positionReport = await ais
-        .find({
-          $and: [
-            {
-              'Position.coordinates.1': {
-                $lt: east,
+        const ais = client.db(dbName).collection('ais');
+        const positionReport = await ais
+          .find({
+            $and: [
+              {
+                'Position.coordinates.1': {
+                  $lt: east,
+                },
               },
-            },
-            {
-              'Position.coordinates.1': {
-                $gt: west,
+              {
+                'Position.coordinates.1': {
+                  $gt: west,
+                },
               },
-            },
-            {
-              'Position.coordinates.0': {
-                $lt: north,
+              {
+                'Position.coordinates.0': {
+                  $lt: north,
+                },
               },
-            },
-            {
-              'Position.coordinates.0': {
-                $gt: south,
+              {
+                'Position.coordinates.0': {
+                  $gt: south,
+                },
               },
-            },
-          ],
-        })
-        .toArray();
-      return positionReport;
+            ],
+          })
+          .toArray();
+        return positionReport;
+      }
     }
     return 'Parameters must be strings';
   } finally {
@@ -414,24 +519,62 @@ const readFivePositions = async (mmsi) => {
   });
   try {
     if (Number.isInteger(mmsi) && mmsi !== null) {
-      await client.connect();
-      const ais = client.db(dbName).collection('ais');
-      const ships = await ais
-        .aggregate([{ $match: { MMSI: mmsi } }, { $sort: { Timestamp: -1 } }], {
-          allowDiskUse: true,
-        })
-        .project({
-          _id: 0,
-          MMSI: 1,
-          Position: {
-            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
-            long: { $arrayElemAt: ['$Position.coordinates', 1] },
-          },
-          IMO: 1,
-        })
-        .limit(5)
-        .toArray();
-      if (ships[0]['IMO']) {
+      try {
+        if (this.stub) {
+          return mmsi;
+        }
+      } catch (e) {
+        return -1;
+      }
+      if (!this.stub) {
+        await client.connect();
+        const ais = client.db(dbName).collection('ais');
+        const ships = await ais
+          .aggregate(
+            [{ $match: { MMSI: mmsi } }, { $sort: { Timestamp: -1 } }],
+            {
+              allowDiskUse: true,
+            }
+          )
+          .project({
+            _id: 0,
+            MMSI: 1,
+            Position: {
+              lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+              long: { $arrayElemAt: ['$Position.coordinates', 1] },
+            },
+            IMO: 1,
+          })
+          .limit(5)
+          .toArray();
+        if (ships[0]['IMO']) {
+          shipDocument = {
+            MMSI: ships[0]['MMSI'],
+            Positions: [
+              {
+                lat: ships[0]['Position']['lat'],
+                long: ships[0]['Position']['long'],
+              },
+              {
+                lat: ships[1]['Position']['lat'],
+                long: ships[1]['Position']['long'],
+              },
+              {
+                lat: ships[2]['Position']['lat'],
+                long: ships[2]['Position']['long'],
+              },
+              {
+                lat: ships[3]['Position']['lat'],
+                long: ships[3]['Position']['long'],
+              },
+              {
+                lat: ships[4]['Position']['lat'],
+                long: ships[4]['Position']['long'],
+              },
+            ],
+            IMO: ships[0]['IMO'],
+          };
+        }
         shipDocument = {
           MMSI: ships[0]['MMSI'],
           Positions: [
@@ -456,35 +599,9 @@ const readFivePositions = async (mmsi) => {
               long: ships[4]['Position']['long'],
             },
           ],
-          IMO: ships[0]['IMO'],
         };
+        return shipDocument;
       }
-      shipDocument = {
-        MMSI: ships[0]['MMSI'],
-        Positions: [
-          {
-            lat: ships[0]['Position']['lat'],
-            long: ships[0]['Position']['long'],
-          },
-          {
-            lat: ships[1]['Position']['lat'],
-            long: ships[1]['Position']['long'],
-          },
-          {
-            lat: ships[2]['Position']['lat'],
-            long: ships[2]['Position']['long'],
-          },
-          {
-            lat: ships[3]['Position']['lat'],
-            long: ships[3]['Position']['long'],
-          },
-          {
-            lat: ships[4]['Position']['lat'],
-            long: ships[4]['Position']['long'],
-          },
-        ],
-      };
-      return shipDocument;
     }
     return 'Parameter must be an integer';
   } finally {
@@ -507,24 +624,33 @@ const recentPositionsToPort = async (portId) => {
   });
   try {
     if (typeof portId === 'string' && portId !== '') {
-      client.connect();
-      const ais = client.db(dbName).collection('ais');
-      const ships = await ais
-        .aggregate([{ $match: { Destination: portId } }])
-        .project({ _id: 0, MMSI: 1 })
-        .toArray();
-      for (let i = 0; i < ships.length; i++) {
-        const positions = await ais
-          .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
-          .project({
-            _id: 0,
-            MMSI: 1,
-            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
-            long: { $arrayElemAt: ['$Position.coordinates', 1] },
-          })
-          .sort({ Timestamp: -1 })
+      try {
+        if (this.stub) {
+          return portId;
+        }
+      } catch (e) {
+        return -1;
+      }
+      if (!this.stub) {
+        client.connect();
+        const ais = client.db(dbName).collection('ais');
+        const ships = await ais
+          .aggregate([{ $match: { Destination: portId } }])
+          .project({ _id: 0, MMSI: 1 })
           .toArray();
-        return positions;
+        for (let i = 0; i < ships.length; i++) {
+          const positions = await ais
+            .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
+            .project({
+              _id: 0,
+              MMSI: 1,
+              lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+              long: { $arrayElemAt: ['$Position.coordinates', 1] },
+            })
+            .sort({ Timestamp: -1 })
+            .toArray();
+          return positions;
+        }
       }
     }
     return 'Parameter must be a string';
@@ -547,55 +673,67 @@ const readPositionToPortFromStatic = async (portName, country) => {
     useUnifiedTopology: true,
   });
   try {
-    client.connect();
-    if (portName && country) {
-      const ais = client.db(dbName).collection('ais');
-      const ships = await ais
-        .aggregate([{ $match: { Destination: portName } }])
-        .project({ _id: 0, MMSI: 1 })
-        .toArray();
-      for (let i = 0; i < ships.length; i++) {
-        const positions = await ais
-          .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
-          .project({
-            _id: 0,
-            MMSI: 1,
-            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
-            long: { $arrayElemAt: ['$Position.coordinates', 1] },
-          })
-          .sort({ Timestamp: -1 })
-          .toArray();
-        return positions;
+    if (typeof portName == 'string' && typeof country == 'string') {
+      try {
+        if (this.stub) {
+          return portName;
+        }
+      } catch (e) {
+        return -1;
+      }
+      if (!this.stub) {
+        client.connect();
+        if (portName && country) {
+          const ais = client.db(dbName).collection('ais');
+          const ships = await ais
+            .aggregate([{ $match: { Destination: portName } }])
+            .project({ _id: 0, MMSI: 1 })
+            .toArray();
+          for (let i = 0; i < ships.length; i++) {
+            const positions = await ais
+              .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
+              .project({
+                _id: 0,
+                MMSI: 1,
+                lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+                long: { $arrayElemAt: ['$Position.coordinates', 1] },
+              })
+              .sort({ Timestamp: -1 })
+              .toArray();
+            return positions;
+          }
+        }
+        if (portName && country === '') {
+          const ais = client.db(dbName).collection('ais');
+          const ships = await ais
+            .aggregate([{ $match: { Destination: portName } }])
+            .project({ _id: 0, MMSI: 1 })
+            .toArray();
+          for (let i = 0; i < ships.length; i++) {
+            const positions = await ais
+              .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
+              .project({
+                _id: 0,
+                MMSI: 1,
+                lat: { $arrayElemAt: ['$Position.coordinates', 0] },
+                long: { $arrayElemAt: ['$Position.coordinates', 1] },
+              })
+              .sort({ Timestamp: -1 })
+              .toArray();
+            return positions;
+          }
+        }
+        if (country && portName === '') {
+          const ports = client.db(dbName).collection('ports');
+          const portCountries = await ports
+            .find({ country: country })
+            .project({ _id: 0 })
+            .toArray();
+          return portCountries;
+        }
       }
     }
-    if (portName && country === '') {
-      const ais = client.db(dbName).collection('ais');
-      const ships = await ais
-        .aggregate([{ $match: { Destination: portName } }])
-        .project({ _id: 0, MMSI: 1 })
-        .toArray();
-      for (let i = 0; i < ships.length; i++) {
-        const positions = await ais
-          .aggregate([{ $match: { MMSI: ships[i].MMSI } }])
-          .project({
-            _id: 0,
-            MMSI: 1,
-            lat: { $arrayElemAt: ['$Position.coordinates', 0] },
-            long: { $arrayElemAt: ['$Position.coordinates', 1] },
-          })
-          .sort({ Timestamp: -1 })
-          .toArray();
-        return positions;
-      }
-    }
-    if (country && portName === '') {
-      const ports = client.db(dbName).collection('ports');
-      const portCountries = await ports
-        .find({ country: country })
-        .project({ _id: 0 })
-        .toArray();
-      return portCountries;
-    }
+    return 'Parameters must be strings';
   } finally {
     client.close();
   }
@@ -638,20 +776,28 @@ const getTilePNG = async (tileId) => {
   });
   try {
     if (Number.isInteger(tileId)) {
-      await client.connect();
-      const mapviews = client.db(dbName).collection('mapviews');
-      const tile = await mapviews.findOne(
-        { id: tileId },
-        { projection: { _id: 0, filename: 1 } }
-      );
-      if (!tile) return 'No tile found';
-      imageBinary = tile.filename
-        .split('')
-        .map((char) => {
-          return char.charCodeAt(0).toString(2);
-        })
-        .join(' ');
-      return imageBinary;
+      try {
+        if (this.stub) {
+          return tileId;
+        }
+      } catch (e) {
+        return -1;
+      }
+      if (!this.stub) {
+        await client.connect();
+        const mapviews = client.db(dbName).collection('mapviews');
+        const tile = await mapviews.findOne(
+          { id: tileId },
+          { projection: { _id: 0, filename: 1 } }
+        );
+        imageBinary = tile.filename
+          .split('')
+          .map((char) => {
+            return char.charCodeAt(0).toString(2);
+          })
+          .join(' ');
+        return imageBinary;
+      }
     }
     return 'Parameter must be an integer';
   } finally {
@@ -674,5 +820,6 @@ module.exports = {
   readPositionToPortFromStatic,
   backgroundMapTile,
   getTilePNG,
-  stub,
 };
+
+exports.stub = stub;

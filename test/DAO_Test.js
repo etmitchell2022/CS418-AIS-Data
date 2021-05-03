@@ -1,8 +1,7 @@
 var assert = require('chai').assert;
 const qr = require('../DAO');
-const fixtures = require('./fixtures');
-
-qr.stub = true;
+const fixtures = require('../fixtures');
+const insertData = require('../Data/sample_input.json');
 
 const {
   insertAISBatch,
@@ -21,6 +20,8 @@ const {
   getTilePNG,
 } = qr;
 
+qr.stub = true;
+
 /**
  * Insert a batch of AIS messages (Static Data and/or Position Reports) (1)
  *
@@ -31,14 +32,21 @@ const {
  * @returns Number of insertions
  */
 describe('insertAISBatch', () => {
-  it('Tests insertion of a batch of AIS messages', async () => {
-    if (qr.stub) {
-      assert.isArray(fixtures.batch);
-      assert.equal(fixtures.batch.length, 4);
-    }
+  it('Tests insertion of a batch of AIS messages (Integration Test)', async () => {
+    // Test json file insertion
+    const testInsertions = await insertAISBatch(insertData);
+    assert.equal(testInsertions, insertData.length);
+
     const res = await insertAISBatch(fixtures.batch);
     assert.equal(fixtures.batch.length, res);
-  });
+  }).timeout(8000);
+});
+describe('insertAISBatch', () => {
+  it('Tests insertion of a batch of AIS messages (Unit Test)', async () => {
+    const testInsertions = await insertAISBatch(insertData);
+    assert.isArray(insertData);
+    assert.equal(testInsertions, 500);
+  }).timeout(8000);
 });
 
 /**
@@ -51,14 +59,20 @@ describe('insertAISBatch', () => {
  * @returns 1/0 for Success/Failure
  */
 describe('insertSingleAIS', () => {
-  it('Tests insertion of single AIS message', async () => {
-    if (qr.stub) {
-      assert.isObject(fixtures.singleMessage);
-      assert.isNotEmpty(fixtures.singleMessage);
+  it('Tests insertion of single AIS message (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await insertSingleAIS();
+      assert.isString(res);
+      assert.equal('1', res);
     }
-    const res = await insertSingleAIS(fixtures.singleMessage);
-    assert.isString(res);
-    assert.equal('1', res);
+  });
+});
+describe('insertSingleAIS', () => {
+  it('Tests insertion of single AIS message (Unit Test)', async () => {
+    if (qr.stub) {
+      const unit = await insertSingleAIS();
+      assert.isNotEmpty(unit);
+    }
   });
 });
 
@@ -87,11 +101,19 @@ describe('deleteAIS', () => {
  * @returns Array of ship documents
  */
 describe('readAllPositions', () => {
-  it('Test reading of all recent ship positions', async () => {
-    if (qr.stub) {
-      assert.isArray(fixtures.allRecentShipPositions);
+  it('Test reading of all recent ship positions (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await readAllPositions();
+      assert.deepEqual(res[0], fixtures.allRecentShipPositions);
     }
-    const res = await readAllPositions();
+  }).timeout(15000);
+});
+describe('readAllPositions', () => {
+  it('Test reading of all recent ship positions (Unit Test)', async () => {
+    if (qr.stub) {
+      const res = await readAllPositions();
+      assert.isNotEmpty(res);
+    }
   }).timeout(15000);
 });
 
@@ -105,13 +127,24 @@ describe('readAllPositions', () => {
  * @returns Position document of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ... }
  */
 describe('readSinglePosition', () => {
-  it('Test read of most recent ship position', async () => {
-    if (qr.stub) {
+  it('Test read of most recent ship position (Integration Test)', async () => {
+    if (!qr.stub) {
       assert.isObject(fixtures.mostRecentPosition);
+      const res = await readSinglePosition(219022256);
+      assert.deepEqual(res, fixtures.mostRecentPosition);
+      assert.isObject(res);
+      const error = await readSinglePosition('1234455');
+      assert.equal(error, 'MMSI must be an integer');
     }
-    const res = await readSinglePosition(219022256);
-    assert.deepEqual(res, fixtures.mostRecentPosition);
-    assert.isObject(res);
+  });
+});
+
+describe('readSinglePosition', () => {
+  it('Test read of most recent ship position (Unit Test)', async () => {
+    if (qr.stub) {
+      const res = await readSinglePosition(219022256);
+      assert.isNotNull(res);
+    }
   });
 });
 
@@ -125,9 +158,25 @@ describe('readSinglePosition', () => {
  * @returns a Vessel document, with available and/or relevant properties.
  */
 describe('readVesselInfo', () => {
-  it('Test read vessel information', async () => {
-    const res = await readVesselInfo(265011000, 8616087, 'SOFIA', 'SBEN');
-    assert.isArray(res);
+  it('Test read vessel information (Integration Test)', async () => {
+    if (!qr.stub) {
+      //Test all specific parameters
+      const res = await readVesselInfo(265011000, 8616087, 'SOFIA', 'SBEN');
+      assert.isArray(res);
+
+      //Test minimal parameters
+      const mmsi = await readVesselInfo(219022323);
+      assert.isArray(mmsi);
+      assert.deepEqual(mmsi, fixtures.vessleInfoMMSI);
+    }
+  }).timeout(5000);
+});
+
+describe('readVesselInfo', () => {
+  it('Test read vessel information (Unit Test)', async () => {
+    //Test minimal parameters
+    const mmsiCheck = await readVesselInfo('265011000');
+    assert.equal(mmsiCheck, 'Parameter must be an integer');
   }).timeout(5000);
 });
 
@@ -141,9 +190,20 @@ describe('readVesselInfo', () => {
  * @returns Array of ship documents
  */
 describe('readRecentPosition', () => {
-  it('Test reading of ship positions in given tile', async () => {
+  it('Test reading of ship positions in given tile (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await readRecentPosition(1);
+      console.log(res);
+      assert.equal(res.count, 628381);
+      assert.isArray(res);
+    }
+  }).timeout(15000);
+});
+
+describe('readRecentPosition', () => {
+  it('Test reading of ship positions in given tile (Unit Test)', async () => {
     const res = await readRecentPosition(1);
-    assert.isNotEmpty(res);
+    assert.isNotNull(res);
   }).timeout(15000);
 });
 
@@ -157,13 +217,21 @@ describe('readRecentPosition', () => {
  * @returns Array of port documents
  */
 describe('readAllPorts', () => {
-  it('Test read of ports matching given name and country', async () => {
-    if (qr.stubs) {
-      assert.isArray(fixtures.readPorts);
+  it('Test read of ports matching given name and country (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await readAllPorts('Frederikshavn', 'Denmark');
+      assert.isArray(res);
+      assert.deepEqual(res, fixtures.readPorts);
     }
-    const res = await readAllPorts('Frederikshavn', 'Denmark');
-    assert.isArray(res);
-    assert.deepEqual(res, fixtures.readPorts);
+  });
+});
+
+describe('readAllPorts', () => {
+  it('Test read of ports matching given name and country (Unit Test)', async () => {
+    if (qr.stub) {
+      const res = await readAllPorts(1);
+      assert.equal(res, 'Parameters must be strings');
+    }
   });
 });
 
@@ -177,17 +245,24 @@ describe('readAllPorts', () => {
  * @returns If unique matching port: Array of Position documents (see above). Otherwise: an Array of Port documents.
  */
 describe('tileShipPosition', () => {
-  it('Test read of all ship positions in tile of scale 3 containing a given port', async () => {
-    if (qr.stub) {
-      assert.isArray(fixtures.tilePositions);
-      assert.equal(3, fixtures.tilePositions.length);
+  it('Test read of all ship positions in tile of scale 3 containing a given port (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await tileShipPositions('Sweden', 'Halmstad');
+      assert.isArray(res);
+      assert.equal(res.length, 814);
+      //Test for invalid parameters
+      const error = await tileShipPositions(321321, 321321);
+      assert.equal(error, 'Parameters must be strings');
     }
-    const res = await tileShipPositions('Sweden', 'Halmstad');
-    assert.isArray(res);
-    assert.equal(res.length, 814);
-    //Test for invalid parameters
-    const error = await tileShipPositions(321321, 321321);
-    assert.equal(error, 'Parameters must be strings');
+  });
+});
+
+describe('tileShipPosition', () => {
+  it('Test read of all ship positions in tile of scale 3 containing a given port (Unit Test)', async () => {
+    if (qr.stub) {
+      const res = await tileShipPositions(1, 1);
+      assert.equal(res, 'Parameters must be strings');
+    }
   });
 });
 
@@ -201,17 +276,24 @@ describe('tileShipPosition', () => {
  * @returns Document of the form {MMSI: ..., Positions: [{"lat": ..., "long": ...}, ...], "IMO": ... }
  */
 describe('readFivePositions', () => {
-  it('Read last 5 positions of given MMSI', async () => {
-    if (qr.stub) {
-      assert.isObject(fixtures.fivePositions);
-      assert.isNotEmpty(fixtures.fivePositions);
-    }
-    const res = await readFivePositions(304858000);
-    assert.isObject(res);
-    assert.deepEqual(res, fixtures.fivePositions);
+  it('Read last 5 positions of given MMSI (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await readFivePositions(304858000);
+      assert.isObject(res);
+      assert.deepEqual(res, fixtures.fivePositions);
 
-    const error = await readFivePositions('123456');
-    assert.equal(error, 'Parameter must be an integer');
+      const error = await readFivePositions('123456');
+      assert.equal(error, 'Parameter must be an integer');
+    }
+  });
+});
+
+describe('readFivePositions', () => {
+  it('Read last 5 positions of given MMSI (Unit Test)', async () => {
+    if (qr.stub) {
+      const error = await readFivePositions('123456');
+      assert.equal(error, 'Parameter must be an integer');
+    }
   });
 });
 
@@ -225,16 +307,25 @@ describe('readFivePositions', () => {
  * @returns - Array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...}
  */
 describe('recentPositionsToPort', () => {
-  it('Read most recents positions of ships headed to port with given Id', async () => {
+  it('Read most recents positions of ships headed to port with given Id (Integration Test)', async () => {
+    if (!qr.stub) {
+      const res = await recentPositionsToPort('OXELOSUND');
+      assert.isArray(fixtures.recentPositionsToPortFixture);
+      assert.deepEqual(res[0], fixtures.recentPositionsToPortFixture[0]);
+
+      const error = await recentPositionsToPort(1234);
+      assert.equal(error, 'Parameter must be a string');
+    }
+  }).timeout(8000);
+});
+
+describe('recentPositionsToPort', () => {
+  it('Read most recents positions of ships headed to port with given Id (Unit Test)', async () => {
     if (qr.stub) {
       assert.isArray(fixtures.recentPositionsToPortFixture);
+      const error = await recentPositionsToPort(1234);
+      assert.equal(error, 'Parameter must be a string');
     }
-    const res = await recentPositionsToPort('OXELOSUND');
-    assert.isArray(fixtures.recentPositionsToPortFixture);
-    assert.deepEqual(res[0], fixtures.recentPositionsToPortFixture[0]);
-
-    const error = await recentPositionsToPort(1234);
-    assert.equal(error, 'Parameter must be a string');
   }).timeout(8000);
 });
 
@@ -248,20 +339,27 @@ describe('recentPositionsToPort', () => {
  * @returns - If unique matching port: array of of Position documents of the form {"MMSI": ..., "lat": ..., "long": ..., "IMO": ...} Otherwise: an Array of Port documents.
  */
 describe('readPositionToPortFromStatic', () => {
-  it('Read most recent positions of ships headed to given port (as read from static data, or user input)', async () => {
-    if (qr.stub) {
+  it('Read most recent positions of ships headed to given port (as read from static data, or user input) (Integration Test)', async () => {
+    if (!qr.stub) {
+      const portName = await readPositionToPortFromStatic('OXELOSUND', '');
       assert.isArray(fixtures.recentPositionsToPortFixture);
-      assert.equal(29, fixtures.recentPositionsToPortFixture.length);
+      assert.deepEqual(portName[0], fixtures.recentPositionsToPortFixture[0]);
+
+      const ports = await readPositionToPortFromStatic('', 'Denmark');
+      assert.isArray(ports);
+
+      const both = await readPositionToPortFromStatic('OXELOSUND', 'Denmark');
+      assert.isArray(both);
     }
-    const portName = await readPositionToPortFromStatic('OXELOSUND', '');
-    assert.isArray(fixtures.recentPositionsToPortFixture);
-    assert.deepEqual(portName[0], fixtures.recentPositionsToPortFixture[0]);
+  });
+});
 
-    const ports = await readPositionToPortFromStatic('', 'Denmark');
-    assert.isArray(ports);
-
-    const both = await readPositionToPortFromStatic('OXELOSUND', 'Denmark');
-    assert.isArray(both);
+describe('readPositionToPortFromStatic', () => {
+  it('Read most recent positions of ships headed to given port (as read from static data, or user input) (Unit Test)', async () => {
+    if (qr.stub) {
+      const error = await readPositionToPortFromStatic(1, 2);
+      assert.equal(error, 'Parameters must be strings');
+    }
   });
 });
 
@@ -290,15 +388,26 @@ describe('backgroundTileMap', () => {
  * @returns - Binary Data
  */
 describe('getTilePNG', () => {
-  it('Given a tile Id, get the actual tile (a PNG file)', async () => {
-    const res = await getTilePNG(1);
-    assert.isNotEmpty(res);
-    assert.equal(res.toString(), fixtures.binary);
+  it('Given a tile Id, get the actual tile (a PNG file) (Integration Test) ', async () => {
+    if (!qr.stub) {
+      const res = await getTilePNG(1);
+      assert.isNotEmpty(res);
+      assert.equal(res.toString(), fixtures.binary);
 
-    const error = await getTilePNG('1');
-    assert.equal(error, 'Parameter must be an integer');
+      const error = await getTilePNG('1');
+      assert.equal(error, 'Parameter must be an integer');
 
-    const noTile = await getTilePNG(4380420489032);
-    assert.equal(noTile, 'No tile found');
+      const noTile = await getTilePNG(4380420489032);
+      assert.equal(noTile, 'No tile found');
+    }
+  });
+});
+
+describe('getTilePNG', () => {
+  it('Given a tile Id, get the actual tile (a PNG file) (Unit Test) ', async () => {
+    if (qr.stub) {
+      const error = await getTilePNG('1');
+      assert.equal(error, 'Parameter must be an integer');
+    }
   });
 });
