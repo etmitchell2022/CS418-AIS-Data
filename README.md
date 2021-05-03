@@ -5,10 +5,10 @@
 4. To create a new database for this project, enter `use projectData` into the mongo shell. If you already have a database with this data, change the dbName variable in DAO.js to match your desired database.
 5. To load the data into your database, inside your terminal enter:
 ```
-mongoimport -d AISTestData -c vessels --maintainInsertionOrder vessels.json
-mongoimport -d AISTestData -c mapviews --maintainInsertionOrder mapviews.json
-mongoimport -d AISTestData -c ports --maintainInsertionOrder ports.json
-mongoimport -d AISTestData -c aisdk_20201118 --maintainInsertionOrder aisdk_20201118_1000000.json
+mongoimport -d projectData -c vessels --maintainInsertionOrder vessels.json
+mongoimport -d projectData -c mapviews --maintainInsertionOrder mapviews.json
+mongoimport -d projectData -c ports --maintainInsertionOrder ports.json
+mongoimport -d projectData -c aisdk_20201118 --maintainInsertionOrder aisdk_20201118_1000000.json
 ```
 * Note: For simplicity, the collection `aisdk_20201118_1000000` was renamed to `ais`. To change the name, enter this into the mongo shell:
 ```
